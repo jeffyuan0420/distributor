@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smart Mirror - Persona Meeting V24 (YouTube Stream)</title>
+    
+    <!-- 基礎庫載入：採用 CDN 確保跨設備穩定執行 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* 基礎樣式重置 */
+        body { 
+            background-color: #000; margin: 0; padding: 0; overflow: hidden; 
+            color: #fff; font-family: "Microsoft JhengHei", "Arial Black", sans-serif; 
+            width: 100vw; height: 100vh; -webkit-user-select: none; 
+        }
+        
+        /* Android 11 喚醒引導層：解鎖音訊與介面權限 */
+        #wake-up-overlay {
+            position: fixed; inset: 0; background: #000;
+            z-index: 99999; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; cursor: pointer;
+            transition: opacity 0.8s ease;
+        }
+        .start-btn-ring {
+            width: 120px; height: 120px; border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.2); display: flex; 
+            align-items: center; justify-content: center;
+            animation: ring-glow 3s infinite;
+        }
+        @keyframes ring-glow { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 0.3; } 100% { transform: scale(1); opacity: 0.8; } }
+
+        /* 物理內縮安全區：針對 43 吋螢幕內縮設計 (40px/60px) */
+        .global-safe-container {
+            width: 100vw;
+            height: 94vh; 
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            padding: 40px 60px; 
+            overflow: hidden;
+        }
+        
+        .glass-panel { 
+            background: rgba(10, 10, 10, 0.7); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 25px; padding: 15px; 
+        }
+
+        /* YouTube 嵌入區塊優化 (80% 寬度，隱藏邊框) */
+        .video-box {
+            width: 80%;
+            margin: 20px auto;
+            aspect-ratio: 16 / 9; 
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 50px rgba(0,0,0,1);
+            position: relative;
+        }
+
+        /* 覆蓋層防止點擊 YouTube 播放器產生導覽 */
+        .video-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+        }
+
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .animate-marquee { display: flex; white-space: nowrap; animation: marquee 40s linear infinite; }
+        
+        .btn-mirror { border: 2px solid rgba(255, 255, 255, 0.1); transition: 0.2s; cursor: pointer; }
+        .btn-active { background: #fff !important; color: #000 !important; box-shadow: 0 0 30px rgba(255,255,255,0.4); }
+        
+        * { -webkit-tap-highlight-color: transparent; }
+    </style>
+</head>
+<body class="bg-black">
+    <!-- Android 11 啟動授權遮罩 -->
+    <div id="wake-up-overlay" onclick="bootSystem()">
+        <div class="start-btn-ring">
+            <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1"><path d="M5 3l14 9-14 9V3z"/></svg>
+        </div>
+        <p style="margin-top: 30px; letter-spacing: 0.6em; font-weight: 200; color: rgba(255,255,255,0.6);">START PERSONA MEETING</p>
+    </div>
+
+    <!-- React 渲染根節點 -->
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        let globalAudio = null;
+
+        // 核心啟動函數
+        window.bootSystem = async function() {
+            try {
+                // 初始化並解鎖本地音訊權限 (bg_music.mp3)
+                globalAudio = new Audio('./bg_music.mp3');
+                globalAudio.loop = true;
+                await globalAudio.play();
+                globalAudio.pause(); 
+                console.log("Audio Engine Ready.");
+            } catch (e) { 
+                console.warn("Media context initialized with fallback."); 
+            }
+
+            // 淡出覆蓋層
+            document.getElementById('wake-up-overlay').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('wake-up-overlay').style.display = 'none';
+                renderApp();
+            }, 800);
+        };
+
+        function App() {
+            const [lang, setLang] = useState('tw');
+            const [time, setTime] = useState(new Date());
+            const [lightOn, setLightOn] = useState(false);
+            const [musicOn, setMusicOn] = useState(false);
+
+            // 經銷商大會行程 (V23 數據)
+            const DATA = {
+                tw: {
+                    title: "PERSONA",
+                    items: [
+                        {t:"13:00", v:"經銷商大會正式開始"},
+                        {t:"14:30", v:"產品創新技術演示"},
+                        {t:"16:00", v:"商務洽談與交流"}
+                    ],
+                    news: "歡迎蒞臨 PERSONA 台灣經銷商大會 • 系統比例已校準 • 下午 1:00 會議正式啟動 • "
+                },
+                en: {
+                    title: "PERSONA",
+                    items: [
+                        {t:"13:00", v:"Meeting Starts"},
+                        {t:"14:30", v:"Innovation Demo"},
+                        {t:"16:00", v:"Networking Session"}
+                    ],
+                    news: "Welcome to PERSONA Meeting • Starts at 1:00 PM • System status: Ready • "
+                }
+            };
+
+            useEffect(() => {
+                const timer = setInterval(() => setTime(new Date()), 1000);
+                lucide.createIcons();
+                return () => clearInterval(timer);
+            }, []);
+
+            const toggleMusic = () => {
+                if (!globalAudio) return;
+                const next = !musicOn;
+                setMusicOn(next);
+                if (next) globalAudio.play(); else globalAudio.pause();
+            };
+
+            const hhmm = time.toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
+            const dateStr = time.toLocaleDateString(lang==='tw'?'zh-TW':'en-US', { month: 'short', day: 'numeric', weekday: 'short' });
+
+            return (
+                <div className="global-safe-container">
+                    {/* 1. TOP AREA */}
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-4">
+                                <div className="h-24 w-24 flex items-center justify-center">
+                                    <img 
+                                        src="./logo.png" 
+                                        className="h-full w-full object-contain" 
+                                        onError={(e) => e.target.src='https://cdn-icons-png.flaticon.com/512/3059/3059518.png'}
+                                    />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-4xl font-black text-white tracking-[0.4em] italic">{DATA[lang].title}</span>
+                                    <span className="text-[10px] text-gray-500 tracking-[0.5em] mt-2 uppercase">Taiwan Meeting</span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 mt-6 opacity-60">
+                                <lucide.CloudRain size={30} className="text-white" />
+                                <span className="text-3xl font-light">24°C</span>
+                            </div>
+                        </div>
+
+                        <div className="text-right">
+                            <h1 className="text-8xl font-thin leading-none tracking-tighter text-white opacity-80">{hhmm}</h1>
+                            <p className="text-xl font-light text-gray-500 mt-4 tracking-widest">{dateStr}</p>
+                        </div>
+                    </div>
+
+                    {/* 2. MIDDLE AREA */}
+                    <div className="flex justify-between items-start mt-6">
+                        <div className="glass-panel flex gap-6 p-8">
+                            <button onClick={() => setLightOn(!lightOn)} className={`w-28 h-28 btn-mirror rounded-[25px] flex flex-col items-center justify-center gap-1 transition-all ${lightOn ? 'btn-active shadow-xl' : 'text-white/30'}`}>
+                                <lucide.Lightbulb size={36} />
+                                <span className="text-[8px] font-black">LIGHT</span>
+                            </button>
+                            <button onClick={toggleMusic} className={`w-28 h-28 btn-mirror rounded-[25px] flex flex-col items-center justify-center gap-1 transition-all ${musicOn ? 'btn-active bg-cyan-600 border-cyan-400' : 'text-white/30'}`}>
+                                {musicOn ? <lucide.Pause size={36} /> : <lucide.Play size={36} />}
+                                <span className="text-[8px] font-black">MUSIC</span>
+                            </button>
+                        </div>
+
+                        <div className="glass-panel w-[320px] text-right p-8">
+                            <div className="text-[10px] font-black tracking-widest border-b border-white/5 pb-1 mb-4 text-blue-500 uppercase italic">Schedule</div>
+                            <div className="flex flex-col gap-4">
+                                {DATA[lang].items.map((it, i) => (
+                                    <div key={i} className="flex flex-col border-r-4 border-white/40 pr-4">
+                                        <span className="text-xl font-bold text-white tracking-tight">{it.v}</span>
+                                        <span className="text-xs font-mono text-gray-500 mt-1">{it.t}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 3. VIDEO AREA (YouTube 嵌入版本) */}
+                    <div className="video-box">
+                        {/* 透明遮罩防止觸摸彈出播放介面 */}
+                        <div className="video-overlay"></div>
+                        <iframe 
+                            className="w-full h-full border-none"
+                            src="https://www.youtube.com/embed/XnjQNAigtYE?autoplay=1&mute=1&loop=1&playlist=XnjQNAigtYE&controls=0&modestbranding=1&rel=0&iv_load_policy=3"
+                            allow="autoplay; encrypted-media" 
+                            allowFullScreen
+                        ></iframe>
+                    </div>
+
+                    {/* 4. BOTTOM AREA */}
+                    <div className="mt-auto pb-6 flex flex-col gap-8">
+                        <div className="flex justify-between items-center w-full px-4">
+                            <div className="flex gap-12 opacity-60">
+                                <div className="text-center">
+                                    <div className="text-3xl font-light text-emerald-400">8200</div>
+                                    <div className="text-[8px] text-gray-500 uppercase tracking-widest">Steps</div>
+                                </div>
+                                <div className="text-center">
+                                    <div className="text-3xl font-light text-indigo-400">85</div>
+                                    <div className="text-[8px] text-gray-500 uppercase tracking-widest">Sleep</div>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4">
+                                {['tw', 'en'].map(c => (
+                                    <button 
+                                        key={c} onClick={() => { setLang(c); setTimeout(() => lucide.createIcons(), 10); }}
+                                        className={`px-10 py-3 border-2 font-black text-xl rounded-[20px] transition-all ${lang === c ? 'bg-white text-black border-white shadow-2xl' : 'border-white/10 text-white/30'}`}
+                                    >
+                                        {c.toUpperCase()}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="w-full border-t border-white/5 pt-4 overflow-hidden opacity-10">
+                            <div className="animate-marquee">
+                                <span className="text-sm font-light text-white italic tracking-widest px-20">{DATA[lang].news}</span>
+                                <span className="text-sm font-light text-white italic tracking-widest px-20">{DATA[lang].news}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function renderApp() {
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
+        }
+    </script>
+</body>
+</html>
