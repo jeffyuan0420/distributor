@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Mirror - Persona Meeting V32</title>
+    <title>Smart Mirror - Persona Meeting V33</title>
     
-    <!-- 核心架構：採用穩定 CDN -->
+    <!-- 基礎架構：採用穩定 CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -19,7 +19,7 @@
             width: 100vw; height: 100vh; -webkit-user-select: none; 
         }
         
-        /* Android 11 喚醒遮罩 */
+        /* Android 11 喚醒遮罩：解鎖影音播放權限 */
         #wake-up-overlay {
             position: fixed; inset: 0; 
             background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
@@ -33,7 +33,7 @@
             align-items: center; justify-content: center;
             animation: ring-pulse 3s infinite;
         }
-        @keyframes ring-pulse { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 0.2; } 100% { transform: scale(1); opacity: 0.8; } }
+        @keyframes ring-pulse { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.2); opacity: 0.2; } 100% { transform: scale(1); opacity: 0.8; } }
 
         /* 物理內縮安全區 (40px/60px) */
         .global-safe-container {
@@ -78,13 +78,14 @@
 <body class="bg-black">
     <!-- 引導層 -->
     <div id="wake-up-overlay" onclick="bootSystem()">
-        <div id="loading-hint" style="color: #444; font-size: 12px; margin-bottom: 20px;">LIBRARIES INITIALIZING...</div>
+        <div id="loading-hint" style="color: #444; font-size: 12px; margin-bottom: 20px;">SYSTEM CALIBRATING...</div>
         <div class="start-ring" id="start-btn" style="display: none;">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1"><path d="M5 3l14 9-14 9V3z"/></svg>
         </div>
         <p id="boot-text" style="display: none; margin-top: 30px; letter-spacing: 0.5em; font-weight: 200; font-size: 14px; color: rgba(255,255,255,0.8);">START PERSONA MEETING</p>
     </div>
 
+    <!-- React 掛載點 -->
     <div id="root"></div>
 
     <script type="text/babel">
@@ -93,7 +94,6 @@
         let globalAudio = null;
         const FALLBACK_MUSIC = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
 
-        // 系統就緒監控
         const checkReady = setInterval(() => {
             if (typeof React !== 'undefined' && typeof lucide !== 'undefined') {
                 document.getElementById('loading-hint').style.display = 'none';
@@ -110,7 +110,7 @@
                 globalAudio.onerror = () => { globalAudio.src = FALLBACK_MUSIC; };
                 await globalAudio.play();
                 globalAudio.pause();
-            } catch (e) { console.warn("Audio Context init bypassed."); }
+            } catch (e) { console.warn("Audio init bypassed."); }
 
             document.getElementById('wake-up-overlay').style.opacity = '0';
             setTimeout(() => {
@@ -133,7 +133,7 @@
                         {t:"14:30", v:"年度產品技術演示"},
                         {t:"16:00", v:"商務交流與茶敘"}
                     ],
-                    news: "歡迎參與 PERSONA 台灣經銷商大會 • 系統比例已校準 • 下午 1:00 會議正式啟動 • "
+                    news: "歡迎蒞臨 PERSONA 台灣經銷商會議 • 系統已校準 • 下午 1:00 正式啟動 • 影音內容自動輪播中 • "
                 },
                 en: {
                     title: "PERSONA",
@@ -142,7 +142,7 @@
                         {t:"14:30", v:"Innovation Demo"},
                         {t:"16:00", v:"Networking"}
                     ],
-                    news: "Welcome to PERSONA Meeting • Optimized for Smart Mirror • "
+                    news: "Welcome to PERSONA Meeting • Optimized for Smart Mirror • Playlist Streaming Active • "
                 }
             };
 
@@ -217,15 +217,16 @@
                         </div>
                     </div>
 
-                    {/* VIDEO Area (YouTube 域名補丁) */}
+                    {/* VIDEO Area (YouTube 5片輪播 + 開啟音量) */}
                     <div className="video-box">
                         <div className="video-overlay"></div>
-                        {/* 修復點：使用 youtube-nocookie 避免第三方 cookie 阻擋 
-                           加入 enablejsapi=1 與 origin=https://www.youtube.com 嘗試模擬合法請求
+                        {/* 修正點：
+                           1. mute=0 (開啟聲音)
+                           2. playlist=[5個影片ID] (實現連續輪播)
                         */}
                         <iframe 
                             className="w-full h-full border-none"
-                            src="https://www.youtube-nocookie.com/embed/XnjQNAigtYE?autoplay=1&mute=1&loop=1&playlist=XnjQNAigtYE&controls=0&modestbranding=1&rel=0&iv_load_policy=3&enablejsapi=1&origin=https://www.youtube.com"
+                            src="https://www.youtube-nocookie.com/embed/XnjQNAigtYE?autoplay=1&mute=0&loop=1&playlist=XnjQNAigtYE,mAbcJRE48VY,n2qsqUDseYI,liuk0tEsOEM,GdKKJTlKUkE&controls=0&modestbranding=1&rel=0&iv_load_policy=3&enablejsapi=1&origin=https://www.youtube.com"
                             allow="autoplay; encrypted-media" 
                             allowFullScreen
                         ></iframe>
