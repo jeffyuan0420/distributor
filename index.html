@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Mirror - Persona Meeting V39 (Safe Zone)</title>
+    <title>Smart Mirror - Persona Meeting V41 (Branding Fix)</title>
     
     <!-- 基礎架構：採用穩定 CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -37,13 +37,13 @@
         }
         @keyframes ring-pulse { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 0.2; } 100% { transform: scale(1); opacity: 0.8; } }
 
-        /* 全螢幕安全容器：垂直分配優化 */
+        /* 全螢幕安全容器 */
         .global-safe-container {
             width: 100vw; height: 100%; 
             display: flex; flex-direction: column;
             justify-content: space-between;
             box-sizing: border-box;
-            padding: 50px 40px 40px 40px; /* 增加底部 Padding 防止邊框遮擋 */
+            padding: 50px 40px 40px 40px; 
         }
         
         .glass-panel { 
@@ -56,7 +56,7 @@
         .video-container-max {
             width: 100%;
             flex: 1; 
-            margin: 10px 0;
+            margin: 15px 0;
             background: #000;
             border-radius: 24px;
             overflow: hidden;
@@ -66,12 +66,12 @@
         }
         .video-overlay { position: absolute; inset: 0; z-index: 10; }
 
-        /* 跑馬燈容器：移至中央安全區 */
+        /* 跑馬燈容器：位移補償 */
         .marquee-safe-box {
             width: 100%;
             background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0) 100%);
-            padding: 12px 0;
-            margin: 15px 0;
+            padding: 15px 0;
+            margin: 10px 0;
             border-top: 1px solid rgba(255,255,255,0.05);
             border-bottom: 1px solid rgba(255,255,255,0.05);
             overflow: hidden;
@@ -89,7 +89,7 @@
 <body class="h-full">
     <!-- 引導層 -->
     <div id="wake-up-overlay" onclick="bootSystem()">
-        <div id="loading-hint" style="color: #444; font-size: 14px; margin-bottom: 20px;">SYSTEM FINALIZING...</div>
+        <div id="loading-hint" style="color: #444; font-size: 14px; margin-bottom: 20px;">FINALIZING BRANDING...</div>
         <div class="start-ring" id="start-btn" style="display: none;">
             <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M5 3l14 9-14 9V3z"/></svg>
         </div>
@@ -120,7 +120,7 @@
                 globalAudio.onerror = () => { globalAudio.src = FALLBACK_MUSIC; };
                 await globalAudio.play();
                 globalAudio.pause();
-            } catch (e) { console.warn("Audio Context init bypassed."); }
+            } catch (e) { console.warn("Audio bypass."); }
 
             document.getElementById('wake-up-overlay').style.opacity = '0';
             setTimeout(() => {
@@ -142,14 +142,8 @@
                     marquee: [
                         "歡迎蒞臨 2026 PERSONA 台灣經銷商大會，共同開啟未來零售新篇章！",
                         "探索智慧魔鏡無限可能，極簡美學與尖端觸控技術的完美融合。",
-                        "PERSONA 專業商務解決方案，致力於為合作夥伴創造最高價值。",
                         "今日會議於下午 1:00 準時啟動，現場系統已全部就緒。",
                         "祝各位合作夥伴今日收穫豐碩，共創未來商機！"
-                    ],
-                    features: [
-                        { icon: "layers", title: "極簡設計", desc: "1px 工藝邊框" },
-                        { icon: "zap", title: "極速響應", desc: "4K 觸控核心" },
-                        { icon: "shield", title: "卓越品質", desc: "專為商務打造" }
                     ],
                     items: [
                         {t:"13:00", v:"經銷商大會正式啟動"},
@@ -163,14 +157,8 @@
                     marquee: [
                         "Welcome to PERSONA Taiwan Distributor Meeting. Shaping the future of retail together!",
                         "Discover Smart Mirror possibilities. Minimalism meets 4K Touch.",
-                        "PERSONA Professional Solutions: Creating value for strategic partners.",
                         "Event starts at 1:00 PM. All systems operational.",
                         "Wishing all partners a successful and productive meeting!"
-                    ],
-                    features: [
-                        { icon: "layers", title: "Minimalist", desc: "Ultra-thin Design" },
-                        { icon: "zap", title: "Instant", desc: "4K Touch Core" },
-                        { icon: "shield", title: "Premium", desc: "Business Ready" }
                     ],
                     items: [
                         {t:"13:00", v:"Grand Opening"},
@@ -205,22 +193,24 @@
             return (
                 <div className="global-safe-container">
                     
-                    {/* 1. HEADER (行程表在右上) */}
+                    {/* 1. HEADER (僅保留 Logo，移除重複文字標題) */}
                     <div className="flex justify-between items-start">
                         <div className="flex flex-col">
-                            <div className="flex items-center gap-4">
-                                <div className="h-20 w-20 flex items-center justify-center">
+                            <div className="flex items-center gap-6">
+                                {/* Logo 容器保持放大效果 */}
+                                <div className="h-32 w-32 flex items-center justify-center">
                                     <img src="./logo.png" className="h-full w-full object-contain" onError={(i) => i.target.src = 'https://cdn-icons-png.flaticon.com/512/3059/3059518.png'} />
                                 </div>
-                                <span className="text-5xl font-black text-white tracking-[0.4em] italic">{t.title}</span>
+                                {/* 已移除原本在此處的 {t.title} 文字標題 */}
                             </div>
-                            <div className="flex items-center gap-3 mt-4 opacity-40">
+                            <div className="flex items-center gap-3 mt-6 opacity-40">
                                 <i data-lucide="map-pin" className="w-5 h-5"></i>
                                 <span className="text-lg font-light uppercase tracking-[0.2em]">Taipei Hub</span>
                             </div>
                         </div>
                         
-                        <div className="flex flex-col items-end">
+                        {/* 時鐘區域：保持向左位移補償 pr-16 */}
+                        <div className="flex flex-col items-end pr-16">
                             <h1 className="text-8xl font-thin leading-none tracking-tighter text-white opacity-80">{hhmm}</h1>
                             <p className="text-2xl font-light text-gray-500 mt-2 tracking-[0.1em] uppercase mb-6">{dateStr}</p>
                             
@@ -238,25 +228,14 @@
                         </div>
                     </div>
 
-                    {/* 2. WELCOME BANNER */}
+                    {/* 2. WELCOME BANNER (保持開啟) */}
                     <div className="mt-2 mb-2 border-l-4 border-white/20 pl-8 py-3 bg-white/5 rounded-r-3xl">
-                        <div className="text-2xl font-light text-white/90 tracking-[0.3em] uppercase">{t.welcome}</div>
-                        <div className="flex gap-10 mt-6">
-                            {t.features.map((f, i) => (
-                                <div key={i} className="flex items-center gap-3">
-                                    <div className="p-2 bg-white/10 rounded-lg">
-                                        <i data-lucide={f.icon} className="w-5 h-5 text-blue-400"></i>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-xs font-bold text-white/80">{f.title}</span>
-                                        <span className="text-[10px] text-gray-500">{f.desc}</span>
-                                    </div>
-                                </div>
-                            ))}
+                        <div className="text-2xl font-light text-white/90 tracking-[0.3em] uppercase">
+                            {t.welcome}
                         </div>
                     </div>
 
-                    {/* 3. VIDEO AREA (核心顯示區) */}
+                    {/* 3. VIDEO AREA (核心播放區) */}
                     <div className="video-container-max">
                         <div className="video-overlay"></div>
                         <iframe 
@@ -267,7 +246,7 @@
                         ></iframe>
                     </div>
 
-                    {/* 4. MARQUEE AREA (安全位移：移至按鈕上方) */}
+                    {/* 4. MARQUEE AREA (跑馬燈安全位移) */}
                     <div className="marquee-safe-box">
                         <div className="animate-marquee">
                             {t.marquee.map((m, i) => (
@@ -285,7 +264,7 @@
                         </div>
                     </div>
 
-                    {/* 5. BOTTOM CONTROLS & STATS (底部安全區) */}
+                    {/* 5. BOTTOM CONTROLS & STATS */}
                     <div className="flex flex-col gap-8">
                         <div className="flex justify-between items-end">
                             <div className="glass-panel flex gap-6 px-10 py-6">
@@ -297,16 +276,6 @@
                                     <i data-lucide={musicOn ? "pause" : "play"} className="w-8 h-8"></i>
                                     <span className="text-[9px] font-black uppercase">Music</span>
                                 </button>
-                            </div>
-
-                            {/* 規格摘要 */}
-                            <div className="flex-1 mx-10 glass-panel flex flex-col justify-center items-center py-6">
-                                <div className="grid grid-cols-2 gap-x-8 gap-y-1">
-                                    <div className="text-[10px] font-light text-gray-500">RES: <span className="text-white ml-2">4K UHD</span></div>
-                                    <div className="text-[10px] font-light text-gray-500">TOUCH: <span className="text-white ml-2">10-PT</span></div>
-                                    <div className="text-[10px] font-light text-gray-500">OS: <span className="text-white ml-2">Android 11</span></div>
-                                    <div className="text-[10px] font-light text-gray-500">BRIGHT: <span className="text-white ml-2">700 Nits</span></div>
-                                </div>
                             </div>
 
                             <div className="flex gap-3 glass-panel p-4">
@@ -321,7 +290,7 @@
                             </div>
                         </div>
 
-                        {/* 健康數據與底部安全區緩衝 */}
+                        {/* 健康數據緩衝區 */}
                         <div className="flex justify-center gap-20 opacity-30">
                             <div className="text-center">
                                 <div className="text-2xl font-light text-emerald-400">8200</div>
