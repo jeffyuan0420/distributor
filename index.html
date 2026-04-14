@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Mirror - Persona Meeting V35 (Vertical Fix)</title>
+    <title>Smart Mirror - Persona Meeting V39 (Safe Zone)</title>
     
     <!-- 基礎架構：採用穩定 CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,22 +13,15 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        /* 強制 html, body, root 佔滿 100% 高度，防止內容縮在上方 */
+        /* 強制 100% 高度，解決塌陷問題 */
         html, body, #root { 
-            height: 100%; 
-            margin: 0; 
-            padding: 0; 
-            overflow: hidden; 
-            background-color: #000;
+            height: 100%; margin: 0; padding: 0; overflow: hidden; background-color: #000;
         }
-
         body { 
-            color: #fff; 
-            font-family: "Microsoft JhengHei", "Arial Black", sans-serif; 
-            -webkit-user-select: none; 
+            color: #fff; font-family: "Microsoft JhengHei", "Arial Black", sans-serif; -webkit-user-select: none; 
         }
         
-        /* Android 11 喚醒遮罩 */
+        /* Android 11 啟動授權層 */
         #wake-up-overlay {
             position: fixed; inset: 0; 
             background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
@@ -44,42 +37,51 @@
         }
         @keyframes ring-pulse { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 0.2; } 100% { transform: scale(1); opacity: 0.8; } }
 
-        /* 全螢幕安全容器：使用 h-full 並強制元素向上下撐開 */
+        /* 全螢幕安全容器：垂直分配優化 */
         .global-safe-container {
-            width: 100vw;
-            height: 100%; 
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between; /* 關鍵：強制將頂部與底部推開 */
+            width: 100vw; height: 100%; 
+            display: flex; flex-direction: column;
+            justify-content: space-between;
             box-sizing: border-box;
-            padding: 60px 40px; /* 增加上下間距，適配 43 吋螢幕 */
+            padding: 50px 40px 40px 40px; /* 增加底部 Padding 防止邊框遮擋 */
         }
         
         .glass-panel { 
-            background: rgba(10, 10, 10, 0.7); 
+            background: rgba(15, 15, 15, 0.7); 
             border: 1px solid rgba(255, 255, 255, 0.1); 
-            border-radius: 24px; padding: 16px; 
+            border-radius: 20px; padding: 12px; 
         }
 
-        /* 影片區塊最大化：佔據中間所有空間 */
-        .video-box-flexible {
+        /* 影片區塊 */
+        .video-container-max {
             width: 100%;
-            flex: 1; /* 自動吃掉剩餘的 3/5 空間 */
-            margin: 30px 0;
+            flex: 1; 
+            margin: 10px 0;
             background: #000;
             border-radius: 24px;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 0 60px rgba(0,0,0,1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
             position: relative;
         }
         .video-overlay { position: absolute; inset: 0; z-index: 10; }
 
-        @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-        .animate-ticker { display: flex; white-space: nowrap; animation: ticker 40s linear infinite; }
+        /* 跑馬燈容器：移至中央安全區 */
+        .marquee-safe-box {
+            width: 100%;
+            background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0) 100%);
+            padding: 12px 0;
+            margin: 15px 0;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            overflow: hidden;
+        }
+
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .animate-marquee { display: flex; white-space: nowrap; animation: marquee 45s linear infinite; }
         
-        .btn-mirror { border: 1.5px solid rgba(255, 255, 255, 0.15); transition: 0.2s; cursor: pointer; }
-        .btn-active { background: #fff !important; color: #000 !important; box-shadow: 0 0 40px rgba(255,255,255,0.3); }
+        .btn-mirror { border: 1.5px solid rgba(255, 255, 255, 0.1); transition: 0.2s; cursor: pointer; }
+        .btn-active { background: #fff !important; color: #000 !important; box-shadow: 0 0 30px rgba(255,255,255,0.3); }
         
         * { -webkit-tap-highlight-color: transparent; }
     </style>
@@ -87,11 +89,11 @@
 <body class="h-full">
     <!-- 引導層 -->
     <div id="wake-up-overlay" onclick="bootSystem()">
-        <div id="loading-hint" style="color: #444; font-size: 14px; margin-bottom: 20px;">SYSTEM CALIBRATING...</div>
+        <div id="loading-hint" style="color: #444; font-size: 14px; margin-bottom: 20px;">SYSTEM FINALIZING...</div>
         <div class="start-ring" id="start-btn" style="display: none;">
             <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M5 3l14 9-14 9V3z"/></svg>
         </div>
-        <p id="boot-text" style="display: none; margin-top: 30px; letter-spacing: 0.6em; font-weight: bold; font-size: 16px; color: #fff;">START PERSONA</p>
+        <p id="boot-text" style="display: none; margin-top: 30px; letter-spacing: 0.8em; font-weight: bold; font-size: 16px; color: #fff;">PERSONA</p>
     </div>
 
     <div id="root" class="h-full"></div>
@@ -102,7 +104,6 @@
         let globalAudio = null;
         const FALLBACK_MUSIC = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
 
-        // 系統載入監控
         const checkReady = setInterval(() => {
             if (typeof React !== 'undefined' && typeof lucide !== 'undefined') {
                 document.getElementById('loading-hint').style.display = 'none';
@@ -119,7 +120,7 @@
                 globalAudio.onerror = () => { globalAudio.src = FALLBACK_MUSIC; };
                 await globalAudio.play();
                 globalAudio.pause();
-            } catch (e) { console.warn("Audio init bypassed."); }
+            } catch (e) { console.warn("Audio Context init bypassed."); }
 
             document.getElementById('wake-up-overlay').style.opacity = '0';
             setTimeout(() => {
@@ -137,23 +138,49 @@
             const DATA = {
                 tw: {
                     title: "PERSONA",
+                    welcome: "歡迎合作夥伴蒞臨 台灣經銷商大會",
+                    marquee: [
+                        "歡迎蒞臨 2026 PERSONA 台灣經銷商大會，共同開啟未來零售新篇章！",
+                        "探索智慧魔鏡無限可能，極簡美學與尖端觸控技術的完美融合。",
+                        "PERSONA 專業商務解決方案，致力於為合作夥伴創造最高價值。",
+                        "今日會議於下午 1:00 準時啟動，現場系統已全部就緒。",
+                        "祝各位合作夥伴今日收穫豐碩，共創未來商機！"
+                    ],
+                    features: [
+                        { icon: "layers", title: "極簡設計", desc: "1px 工藝邊框" },
+                        { icon: "zap", title: "極速響應", desc: "4K 觸控核心" },
+                        { icon: "shield", title: "卓越品質", desc: "專為商務打造" }
+                    ],
                     items: [
-                        {t:"13:00", v:"經銷商大會正式開始"},
+                        {t:"13:00", v:"經銷商大會正式啟動"},
                         {t:"14:30", v:"年度產品技術演示"},
                         {t:"16:00", v:"商務交流茶敘"}
-                    ],
-                    news: "歡迎蒞臨 PERSONA 台灣經銷商大會 • 垂直比例已修正 • 5部影片自動輪播中 (音訊開啟) • "
+                    ]
                 },
                 en: {
                     title: "PERSONA",
-                    items: [
-                        {t:"13:00", v:"Meeting Starts"},
-                        {t:"14:30", v:"Innovation Demo"},
-                        {t:"16:00", v:"Networking"}
+                    welcome: "Taiwan Distributor Meeting 2026",
+                    marquee: [
+                        "Welcome to PERSONA Taiwan Distributor Meeting. Shaping the future of retail together!",
+                        "Discover Smart Mirror possibilities. Minimalism meets 4K Touch.",
+                        "PERSONA Professional Solutions: Creating value for strategic partners.",
+                        "Event starts at 1:00 PM. All systems operational.",
+                        "Wishing all partners a successful and productive meeting!"
                     ],
-                    news: "Welcome to PERSONA Meeting • Vertical Ratio Corrected • Audio Active • "
+                    features: [
+                        { icon: "layers", title: "Minimalist", desc: "Ultra-thin Design" },
+                        { icon: "zap", title: "Instant", desc: "4K Touch Core" },
+                        { icon: "shield", title: "Premium", desc: "Business Ready" }
+                    ],
+                    items: [
+                        {t:"13:00", v:"Grand Opening"},
+                        {t:"14:30", v:"Innovation Demo"},
+                        {t:"16:00", v:"Networking Session"}
+                    ]
                 }
             };
+
+            const t = DATA[lang];
 
             useEffect(() => {
                 const timer = setInterval(() => setTime(new Date()), 1000);
@@ -178,57 +205,59 @@
             return (
                 <div className="global-safe-container">
                     
-                    {/* 1. TOP Area */}
+                    {/* 1. HEADER (行程表在右上) */}
                     <div className="flex justify-between items-start">
                         <div className="flex flex-col">
                             <div className="flex items-center gap-4">
                                 <div className="h-20 w-20 flex items-center justify-center">
-                                    <img 
-                                        src="./logo.png" 
-                                        className="h-full w-full object-contain" 
-                                        onError={(i) => i.target.src = 'https://cdn-icons-png.flaticon.com/512/3059/3059518.png'}
-                                    />
+                                    <img src="./logo.png" className="h-full w-full object-contain" onError={(i) => i.target.src = 'https://cdn-icons-png.flaticon.com/512/3059/3059518.png'} />
                                 </div>
-                                <span className="text-4xl font-black text-white tracking-[0.5em] italic mt-2">{DATA[lang].title}</span>
+                                <span className="text-5xl font-black text-white tracking-[0.4em] italic">{t.title}</span>
                             </div>
-                            <div className="flex items-center gap-3 mt-4 opacity-50">
-                                <i data-lucide="cloud-rain" className="w-5 h-5"></i>
-                                <span className="text-2xl font-light">24°C</span>
+                            <div className="flex items-center gap-3 mt-4 opacity-40">
+                                <i data-lucide="map-pin" className="w-5 h-5"></i>
+                                <span className="text-lg font-light uppercase tracking-[0.2em]">Taipei Hub</span>
                             </div>
                         </div>
-                        <div className="text-right">
-                            <h1 className="text-7xl font-thin leading-none tracking-tighter text-white opacity-80">{hhmm}</h1>
-                            <p className="text-xl font-light text-gray-500 mt-2 tracking-widest uppercase">{dateStr}</p>
+                        
+                        <div className="flex flex-col items-end">
+                            <h1 className="text-8xl font-thin leading-none tracking-tighter text-white opacity-80">{hhmm}</h1>
+                            <p className="text-2xl font-light text-gray-500 mt-2 tracking-[0.1em] uppercase mb-6">{dateStr}</p>
+                            
+                            <div className="glass-panel w-[240px] text-right">
+                                <div className="text-[9px] font-black tracking-widest border-b border-white/5 pb-2 mb-2 text-blue-500 uppercase italic">Schedule</div>
+                                <div className="flex flex-col gap-2">
+                                    {t.items.map((it, i) => (
+                                        <div key={i} className="flex flex-col border-r-3 border-white/40 pr-4">
+                                            <span className="text-[13px] font-bold text-white/90">{it.v}</span>
+                                            <span className="text-[10px] font-mono text-gray-500">{it.t}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    {/* 2. MIDDLE Area (功能面板與行程) */}
-                    <div className="flex justify-between items-start mt-4">
-                        <div className="glass-panel flex gap-6">
-                            <button onClick={() => setLightOn(!lightOn)} className={`w-20 h-20 btn-mirror rounded-[15px] flex flex-col items-center justify-center gap-1 ${lightOn ? 'btn-active' : 'text-white/30'}`}>
-                                <i data-lucide="lightbulb" className="w-6 h-6"></i>
-                                <span className="text-[7px] font-black uppercase">LIGHT</span>
-                            </button>
-                            <button onClick={handleMusic} className={`w-20 h-20 btn-mirror rounded-[15px] flex flex-col items-center justify-center gap-1 ${musicOn ? 'btn-active bg-cyan-600' : 'text-white/30'}`}>
-                                <i data-lucide={musicOn ? "pause" : "play"} className="w-6 h-6"></i>
-                                <span className="text-[7px] font-black uppercase">MUSIC</span>
-                            </button>
-                        </div>
-                        <div className="glass-panel w-[220px] text-right">
-                            <div className="text-[7px] font-black tracking-widest border-b border-white/5 pb-1 mb-2 text-blue-500 uppercase italic">Schedule</div>
-                            <div className="flex flex-col gap-2">
-                                {DATA[lang].items.map((it, i) => (
-                                    <div key={i} className="flex flex-col border-r-2 border-white/40 pr-3">
-                                        <span className="text-[11px] font-bold text-white/80">{it.v}</span>
-                                        <span className="text-[8px] font-mono text-gray-500 uppercase">{it.t}</span>
+                    {/* 2. WELCOME BANNER */}
+                    <div className="mt-2 mb-2 border-l-4 border-white/20 pl-8 py-3 bg-white/5 rounded-r-3xl">
+                        <div className="text-2xl font-light text-white/90 tracking-[0.3em] uppercase">{t.welcome}</div>
+                        <div className="flex gap-10 mt-6">
+                            {t.features.map((f, i) => (
+                                <div key={i} className="flex items-center gap-3">
+                                    <div className="p-2 bg-white/10 rounded-lg">
+                                        <i data-lucide={f.icon} className="w-5 h-5 text-blue-400"></i>
                                     </div>
-                                ))}
-                            </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-xs font-bold text-white/80">{f.title}</span>
+                                        <span className="text-[10px] text-gray-500">{f.desc}</span>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
-                    {/* 3. VIDEO Area (修正點：利用 flex-1 填滿中間 3/5 的空白區域) */}
-                    <div className="video-box-flexible">
+                    {/* 3. VIDEO AREA (核心顯示區) */}
+                    <div className="video-container-max">
                         <div className="video-overlay"></div>
                         <iframe 
                             className="w-full h-full border-none"
@@ -238,31 +267,69 @@
                         ></iframe>
                     </div>
 
-                    {/* 4. BOTTOM Area (鎖定在最底端) */}
-                    <div className="flex flex-col gap-6 pb-2">
-                        <div className="flex justify-center gap-16 w-full opacity-60">
+                    {/* 4. MARQUEE AREA (安全位移：移至按鈕上方) */}
+                    <div className="marquee-safe-box">
+                        <div className="animate-marquee">
+                            {t.marquee.map((m, i) => (
+                                <div key={i} className="flex items-center">
+                                    <span className="text-2xl font-light text-white tracking-[0.1em] px-12 italic">{m}</span>
+                                    <i data-lucide="sparkles" className="w-6 h-6 text-blue-400 opacity-60"></i>
+                                </div>
+                            ))}
+                            {t.marquee.map((m, i) => (
+                                <div key={`rep-${i}`} className="flex items-center">
+                                    <span className="text-2xl font-light text-white tracking-[0.1em] px-12 italic">{m}</span>
+                                    <i data-lucide="sparkles" className="w-6 h-6 text-blue-400 opacity-60"></i>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* 5. BOTTOM CONTROLS & STATS (底部安全區) */}
+                    <div className="flex flex-col gap-8">
+                        <div className="flex justify-between items-end">
+                            <div className="glass-panel flex gap-6 px-10 py-6">
+                                <button onClick={() => setLightOn(!lightOn)} className={`w-20 h-20 btn-mirror rounded-[20px] flex flex-col items-center justify-center gap-2 ${lightOn ? 'btn-active shadow-xl' : 'text-white/30'}`}>
+                                    <i data-lucide="lightbulb" className="w-8 h-8"></i>
+                                    <span className="text-[9px] font-black uppercase">Light</span>
+                                </button>
+                                <button onClick={handleMusic} className={`w-20 h-20 btn-mirror rounded-[20px] flex flex-col items-center justify-center gap-2 ${musicOn ? 'btn-active bg-cyan-600' : 'text-white/30'}`}>
+                                    <i data-lucide={musicOn ? "pause" : "play"} className="w-8 h-8"></i>
+                                    <span className="text-[9px] font-black uppercase">Music</span>
+                                </button>
+                            </div>
+
+                            {/* 規格摘要 */}
+                            <div className="flex-1 mx-10 glass-panel flex flex-col justify-center items-center py-6">
+                                <div className="grid grid-cols-2 gap-x-8 gap-y-1">
+                                    <div className="text-[10px] font-light text-gray-500">RES: <span className="text-white ml-2">4K UHD</span></div>
+                                    <div className="text-[10px] font-light text-gray-500">TOUCH: <span className="text-white ml-2">10-PT</span></div>
+                                    <div className="text-[10px] font-light text-gray-500">OS: <span className="text-white ml-2">Android 11</span></div>
+                                    <div className="text-[10px] font-light text-gray-500">BRIGHT: <span className="text-white ml-2">700 Nits</span></div>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3 glass-panel p-4">
+                                {['tw', 'en'].map(c => (
+                                    <button 
+                                        key={c} onClick={() => setLang(c)}
+                                        className={`px-6 py-2 border font-black text-sm rounded-[10px] transition-all ${lang === c ? 'bg-white text-black shadow-lg' : 'border-white/10 text-white/20'}`}
+                                    >
+                                        {c.toUpperCase()}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* 健康數據與底部安全區緩衝 */}
+                        <div className="flex justify-center gap-20 opacity-30">
                             <div className="text-center">
-                                <div className="text-3xl font-light text-emerald-400">8200</div>
-                                <div className="text-[8px] text-gray-500 uppercase tracking-widest">Steps</div>
+                                <div className="text-2xl font-light text-emerald-400">8200</div>
+                                <div className="text-[7px] text-gray-500 uppercase tracking-widest">Steps</div>
                             </div>
                             <div className="text-center">
                                 <div className="text-3xl font-light text-indigo-400">85</div>
-                                <div className="text-[8px] text-gray-500 uppercase tracking-widest">Sleep</div>
-                            </div>
-                        </div>
-                        <div className="flex justify-center gap-6 w-full">
-                            {['tw', 'en'].map(c => (
-                                <button 
-                                    key={c} onClick={() => setLang(c)}
-                                    className={`px-10 py-3 border-2 font-black text-xl rounded-[15px] ${lang === c ? 'bg-white text-black shadow-lg' : 'border-white/10 text-white/20'}`}
-                                >
-                                    {c.toUpperCase()}
-                                </button>
-                            ))}
-                        </div>
-                        <div className="w-full border-t border-white/5 pt-3 overflow-hidden opacity-10">
-                            <div className="animate-ticker">
-                                {[1,2].map(i => <span key={i} className="text-[10px] font-light text-white italic pr-12">{DATA[lang].news}</span>)}
+                                <div className="text-[7px] text-gray-500 uppercase tracking-widest">Sleep</div>
                             </div>
                         </div>
                     </div>
