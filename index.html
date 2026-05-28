@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Mirror - Persona Meeting V41 (Branding Fix)</title>
+    <title>Smart Mirror - COMPUTEX Taipei 2026 V42</title>
     
-    <!-- 基礎架構：採用穩定 CDN -->
+    <!-- 基礎架構載入：採用穩定線上 CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -13,7 +13,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        /* 強制 100% 高度，解決塌陷問題 */
+        /* 強制 100% 高度，解決 43 吋直立螢幕高度塌陷問題 */
         html, body, #root { 
             height: 100%; margin: 0; padding: 0; overflow: hidden; background-color: #000;
         }
@@ -37,7 +37,7 @@
         }
         @keyframes ring-pulse { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 0.2; } 100% { transform: scale(1); opacity: 0.8; } }
 
-        /* 全螢幕安全容器 */
+        /* 全螢幕安全容器：留出四周物理邊框安全間距 */
         .global-safe-container {
             width: 100vw; height: 100%; 
             display: flex; flex-direction: column;
@@ -52,7 +52,7 @@
             border-radius: 20px; padding: 12px; 
         }
 
-        /* 影片區塊 */
+        /* 影片播放容器：自適應撐開中間高度 */
         .video-container-max {
             width: 100%;
             flex: 1; 
@@ -60,13 +60,13 @@
             background: #000;
             border-radius: 24px;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             box-shadow: 0 0 50px rgba(0,0,0,0.8);
             position: relative;
         }
         .video-overlay { position: absolute; inset: 0; z-index: 10; }
 
-        /* 跑馬燈容器：位移補償 */
+        /* 跑馬燈安全區域：避開底部外框遮擋 */
         .marquee-safe-box {
             width: 100%;
             background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0) 100%);
@@ -85,15 +85,26 @@
         
         * { -webkit-tap-highlight-color: transparent; }
     </style>
+    
+    <script>
+        // 建立全域代理函數，確保 HTML 中的 onclick 隨時可用，避免因 Babel Standalone 非同步編譯未完成而拋出 ReferenceError
+        window.bootSystem = function() {
+            if (typeof window._bootSystemImpl === 'function') {
+                window._bootSystemImpl();
+            } else {
+                console.warn("系統仍在初始化編譯，請稍候點擊。");
+            }
+        };
+    </script>
 </head>
 <body class="h-full">
-    <!-- 引導層 -->
+    <!-- 引導層：解鎖 Android 11 媒體自動播放限制 -->
     <div id="wake-up-overlay" onclick="bootSystem()">
-        <div id="loading-hint" style="color: #444; font-size: 14px; margin-bottom: 20px;">FINALIZING BRANDING...</div>
+        <div id="loading-hint" style="color: #444; font-size: 14px; margin-bottom: 20px;">LAUNCHING COMPUTEX EXPERIENCE...</div>
         <div class="start-ring" id="start-btn" style="display: none;">
             <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M5 3l14 9-14 9V3z"/></svg>
         </div>
-        <p id="boot-text" style="display: none; margin-top: 30px; letter-spacing: 0.8em; font-weight: bold; font-size: 16px; color: #fff;">PERSONA</p>
+        <p id="boot-text" style="display: none; margin-top: 30px; letter-spacing: 0.8em; font-weight: bold; font-size: 16px; color: #fff;">COMPUTEX 2026</p>
     </div>
 
     <div id="root" class="h-full"></div>
@@ -104,6 +115,7 @@
         let globalAudio = null;
         const FALLBACK_MUSIC = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
 
+        // 系統載入監控：確保 React 與 Lucide 庫完全加載後才顯示點擊按鈕
         const checkReady = setInterval(() => {
             if (typeof React !== 'undefined' && typeof lucide !== 'undefined') {
                 document.getElementById('loading-hint').style.display = 'none';
@@ -113,8 +125,10 @@
             }
         }, 500);
 
-        window.bootSystem = async function() {
+        // 將實際的啟動邏輯註冊到代理對象上
+        window._bootSystemImpl = async function() {
             try {
+                // 嘗試加載並解鎖本地背景音樂
                 globalAudio = new Audio('./bg_music.mp3');
                 globalAudio.loop = true;
                 globalAudio.onerror = () => { globalAudio.src = FALLBACK_MUSIC; };
@@ -122,6 +136,7 @@
                 globalAudio.pause();
             } catch (e) { console.warn("Audio bypass."); }
 
+            // 淡出啟動遮罩，進入主介面
             document.getElementById('wake-up-overlay').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('wake-up-overlay').style.display = 'none';
@@ -135,35 +150,40 @@
             const [lightOn, setLightOn] = useState(false);
             const [musicOn, setMusicOn] = useState(false);
 
+            // --- COMPUTEX 2026 國際商務語言資料庫 ---
             const DATA = {
                 tw: {
-                    title: "PERSONA",
-                    welcome: "歡迎合作夥伴蒞臨 台灣經銷商大會",
+                    welcome: "歡迎蒞臨 COMPUTEX 2026 | PERSONA 智慧魔鏡展位",
+                    location: "南港展覽館 2 館 1 樓 | 展位 Q0829",
+                    visitorsLabel: "累積展期人流",
+                    uptimeLabel: "系統持續運作",
                     marquee: [
-                        "歡迎蒞臨 2026 PERSONA 台灣經銷商大會，共同開啟未來零售新篇章！",
-                        "探索智慧魔鏡無限可能，極簡美學與尖端觸控技術的完美融合。",
-                        "今日會議於下午 1:00 準時啟動，現場系統已全部就緒。",
-                        "祝各位合作夥伴今日收穫豐碩，共創未來商機！"
+                        "歡迎蒞臨 COMPUTEX 2026 PERSONA 展位 Q0829，共同開啟未來零售新篇章！",
+                        "PERSONA 4K 智慧魔鏡：支援 10 點電容觸控、Android 11 系統，專為頂級商務展示量身打造。",
+                        "現場每日定時舉辦 Live Demo 產品發表，歡迎洽詢現場工作人員獲取詳細規格。",
+                        "全球代理商與經銷商招募中，誠邀各界合作夥伴洽談 ODM / OEM 專案與客製化合作。"
                     ],
                     items: [
-                        {t:"13:00", v:"經銷商大會正式啟動"},
-                        {t:"14:30", v:"年度產品技術演示"},
-                        {t:"16:00", v:"商務交流茶敘"}
+                        {t:"11:00 am", v:"智慧零售魔鏡 Live 發表會"},
+                        {t:"14:00 pm", v:"AI 互動智慧系統展示"},
+                        {t:"16:00 pm", v:"現場技術合作洽談會"}
                     ]
                 },
                 en: {
-                    title: "PERSONA",
-                    welcome: "Taiwan Distributor Meeting 2026",
+                    welcome: "Welcome to COMPUTEX 2026 | PERSONA Smart Mirror",
+                    location: "TaiNEX Hall 2, 1F | Booth Q0829",
+                    visitorsLabel: "TOTAL VISITORS",
+                    uptimeLabel: "SYSTEM UPTIME",
                     marquee: [
-                        "Welcome to PERSONA Taiwan Distributor Meeting. Shaping the future of retail together!",
-                        "Discover Smart Mirror possibilities. Minimalism meets 4K Touch.",
-                        "Event starts at 1:00 PM. All systems operational.",
-                        "Wishing all partners a successful and productive meeting!"
+                        "Welcome to PERSONA Booth Q0829 at COMPUTEX 2026! Let's shape the future of retail together!",
+                        "PERSONA 4K Smart Mirror: Featuring 10-point capacitive touch, powered by Android 11, tailored for premium business.",
+                        "Live Product Demos held daily. Scan or contact our onsite team for full specifications and partnerships.",
+                        "Global distributors & partners wanted. Welcome to discuss ODM/OEM projects and custom integrations."
                     ],
                     items: [
-                        {t:"13:00", v:"Grand Opening"},
-                        {t:"14:30", v:"Innovation Demo"},
-                        {t:"16:00", v:"Networking Session"}
+                        {t:"11:00 am", v:"Smart Retail Mirror Live Demo"},
+                        {t:"14:00 pm", v:"AI Interactive Tech Show"},
+                        {t:"16:00 pm", v:"Business & Tech Matchmaking"}
                     ]
                 }
             };
@@ -193,29 +213,29 @@
             return (
                 <div className="global-safe-container">
                     
-                    {/* 1. HEADER (僅保留 Logo，移除重複文字標題) */}
+                    {/* 1. HEADER (放大 Logo + 右上角防切邊時鐘與 COMPUTEX 行程) */}
                     <div className="flex justify-between items-start">
                         <div className="flex flex-col">
                             <div className="flex items-center gap-6">
-                                {/* Logo 容器保持放大效果 */}
+                                {/* 放大後的 Logo (不帶重複文字) */}
                                 <div className="h-32 w-32 flex items-center justify-center">
                                     <img src="./logo.png" className="h-full w-full object-contain" onError={(i) => i.target.src = 'https://cdn-icons-png.flaticon.com/512/3059/3059518.png'} />
                                 </div>
-                                {/* 已移除原本在此處的 {t.title} 文字標題 */}
                             </div>
                             <div className="flex items-center gap-3 mt-6 opacity-40">
                                 <i data-lucide="map-pin" className="w-5 h-5"></i>
-                                <span className="text-lg font-light uppercase tracking-[0.2em]">Taipei Hub</span>
+                                <span className="text-lg font-light uppercase tracking-[0.2em]">{t.location}</span>
                             </div>
                         </div>
                         
-                        {/* 時鐘區域：保持向左位移補償 pr-16 */}
+                        {/* 時鐘區域：內縮 pr-16 確保物理黑框不遮擋 */}
                         <div className="flex flex-col items-end pr-16">
                             <h1 className="text-8xl font-thin leading-none tracking-tighter text-white opacity-80">{hhmm}</h1>
                             <p className="text-2xl font-light text-gray-500 mt-2 tracking-[0.1em] uppercase mb-6">{dateStr}</p>
                             
-                            <div className="glass-panel w-[240px] text-right">
-                                <div className="text-[9px] font-black tracking-widest border-b border-white/5 pb-2 mb-2 text-blue-500 uppercase italic">Schedule</div>
+                            {/* 右上角：COMPUTEX 現場發表行程 */}
+                            <div className="glass-panel w-[260px] text-right">
+                                <div className="text-[9px] font-black tracking-widest border-b border-white/5 pb-2 mb-2 text-blue-500 uppercase italic">Show Schedule</div>
                                 <div className="flex flex-col gap-2">
                                     {t.items.map((it, i) => (
                                         <div key={i} className="flex flex-col border-r-3 border-white/40 pr-4">
@@ -228,14 +248,14 @@
                         </div>
                     </div>
 
-                    {/* 2. WELCOME BANNER (保持開啟) */}
+                    {/* 2. WELCOME BANNER (中英雙語 COMPUTEX 歡迎標語) */}
                     <div className="mt-2 mb-2 border-l-4 border-white/20 pl-8 py-3 bg-white/5 rounded-r-3xl">
                         <div className="text-2xl font-light text-white/90 tracking-[0.3em] uppercase">
                             {t.welcome}
                         </div>
                     </div>
 
-                    {/* 3. VIDEO AREA (核心播放區) */}
+                    {/* 3. VIDEO AREA (核心 5 片 YouTube 帶音訊輪播) */}
                     <div className="video-container-max">
                         <div className="video-overlay"></div>
                         <iframe 
@@ -246,7 +266,7 @@
                         ></iframe>
                     </div>
 
-                    {/* 4. MARQUEE AREA (跑馬燈安全位移) */}
+                    {/* 4. MARQUEE AREA (安全上移：中英 COMPUTEX 動態跑馬燈) */}
                     <div className="marquee-safe-box">
                         <div className="animate-marquee">
                             {t.marquee.map((m, i) => (
@@ -264,9 +284,10 @@
                         </div>
                     </div>
 
-                    {/* 5. BOTTOM CONTROLS & STATS */}
+                    {/* 5. BOTTOM CONTROLS & STATS (精簡控制按鈕 + 展會商務指標數據) */}
                     <div className="flex flex-col gap-8">
                         <div className="flex justify-between items-end">
+                            {/* 燈光與音樂按鈕 */}
                             <div className="glass-panel flex gap-6 px-10 py-6">
                                 <button onClick={() => setLightOn(!lightOn)} className={`w-20 h-20 btn-mirror rounded-[20px] flex flex-col items-center justify-center gap-2 ${lightOn ? 'btn-active shadow-xl' : 'text-white/30'}`}>
                                     <i data-lucide="lightbulb" className="w-8 h-8"></i>
@@ -278,11 +299,12 @@
                                 </button>
                             </div>
 
+                            {/* 語言切換按鈕區 */}
                             <div className="flex gap-3 glass-panel p-4">
                                 {['tw', 'en'].map(c => (
                                     <button 
                                         key={c} onClick={() => setLang(c)}
-                                        className={`px-6 py-2 border font-black text-sm rounded-[10px] transition-all ${lang === c ? 'bg-white text-black shadow-lg' : 'border-white/10 text-white/20'}`}
+                                        className={`px-6 py-2 border font-black text-sm rounded-[10px] transition-all ${lang === c ? 'bg-white text-black shadow-lg' : 'border-white/10 text-white/30'}`}
                                     >
                                         {c.toUpperCase()}
                                     </button>
@@ -290,15 +312,15 @@
                             </div>
                         </div>
 
-                        {/* 健康數據緩衝區 */}
+                        {/* 最底部：COMPUTEX 展場商務數據指標 */}
                         <div className="flex justify-center gap-20 opacity-30">
                             <div className="text-center">
-                                <div className="text-2xl font-light text-emerald-400">8200</div>
-                                <div className="text-[7px] text-gray-500 uppercase tracking-widest">Steps</div>
+                                <div className="text-2xl font-light text-emerald-400">12,480</div>
+                                <div className="text-[7px] text-gray-500 uppercase tracking-widest">{t.visitorsLabel}</div>
                             </div>
                             <div className="text-center">
-                                <div className="text-3xl font-light text-indigo-400">85</div>
-                                <div className="text-[7px] text-gray-500 uppercase tracking-widest">Sleep</div>
+                                <div className="text-3xl font-light text-indigo-400">100%</div>
+                                <div className="text-[7px] text-gray-500 uppercase tracking-widest">{t.uptimeLabel}</div>
                             </div>
                         </div>
                     </div>
