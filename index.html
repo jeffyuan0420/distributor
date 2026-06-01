@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Mirror - COMPUTEX Taipei 2026 V44 (Anti-Glare & High Contrast)</title>
+    <title>Smart Mirror - COMPUTEX Taipei 2026 V45 (Neon Glow Buttons)</title>
     
     <!-- 基礎架構載入：採用穩定線上 CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -37,7 +37,7 @@
         }
         @keyframes ring-pulse { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 0.2; } 100% { transform: scale(1); opacity: 0.8; } }
 
-        /* 全螢幕安全容器：留出四周物理邊框安全間距 */
+        /* 全螢幕安全容器 */
         .global-safe-container {
             width: 100vw; height: 100%; 
             display: flex; flex-direction: column;
@@ -90,35 +90,42 @@
         @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         .animate-marquee { display: flex; white-space: nowrap; animation: marquee 45s linear infinite; }
         
-        /* 💡 現場高可視度實心按鈕樣式 */
+        /* 💡 現場超高可視度：實心霓虹發光按鈕樣式 (V45 修復) */
         .btn-mirror-inactive-ctrl {
-            background-color: #121212 !important;
-            border: 3px solid #10b981 !important;
+            background-color: rgba(16, 185, 129, 0.15) !important; /* 實心15%綠底，消除全黑反光 */
+            border: 4px solid #10b981 !important; /* 加粗至 4px */
             color: #10b981 !important;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
         }
         .btn-mirror-active-ctrl {
-            background-color: #10b981 !important;
-            border: 3px solid #10b981 !important;
-            color: #000000 !important;
-            box-shadow: 0 0 40px rgba(16, 185, 129, 0.8);
+            background-color: #10b981 !important; /* 100% 實心螢光綠 */
+            border: 4px solid #10b981 !important;
+            color: #000000 !important; /* 純黑字，對比強烈 */
+            box-shadow: 0 0 50px rgba(16, 185, 129, 0.9); /* 超高霓虹發光暈 */
         }
         
         .btn-mirror-inactive-lang {
-            background-color: #121212 !important;
-            border: 3px solid #22d3ee !important;
+            background-color: rgba(34, 211, 238, 0.15) !important; /* 實心15%藍底 */
+            border: 4px solid #22d3ee !important; /* 加粗至 4px */
             color: #22d3ee !important;
-            box-shadow: 0 4px 15px rgba(34, 211, 238, 0.2);
+            box-shadow: 0 4px 20px rgba(34, 211, 238, 0.3);
         }
         .btn-mirror-active-lang {
-            background-color: #22d3ee !important;
-            border: 3px solid #22d3ee !important;
+            background-color: #22d3ee !important; /* 100% 實心螢光藍 */
+            border: 4px solid #22d3ee !important;
             color: #000000 !important;
-            box-shadow: 0 0 40px rgba(34, 211, 238, 0.8);
+            box-shadow: 0 0 50px rgba(34, 211, 238, 0.9);
         }
         
         .btn-mirror { transition: all 0.15s ease-out; cursor: pointer; }
         .btn-mirror:active { transform: scale(0.92); }
+        
+        /* 💡 強制攔截並修改 Lucide 轉換後的 SVG 圖標：線條直接增粗至 2.8px，寬高放大至 42px */
+        .btn-mirror svg {
+            width: 42px !important;
+            height: 42px !important;
+            stroke-width: 2.8 !important; /* 原本是 1.5 或 2.0，加粗解決反射看不清的問題 */
+        }
         
         * { -webkit-tap-highlight-color: transparent; }
     </style>
@@ -326,39 +333,38 @@
                         </div>
                     </div>
 
-                    {/* 5. BOTTOM CONTROLS & STATS (現場高飽和度實心按鈕) */}
-                    {}
+                    {/* 5. BOTTOM CONTROLS & STATS (現場高飽和度螢光實心按鈕) */}
                     <div className="flex flex-col gap-8">
                         <div className="flex justify-between items-end">
-                            {/* 💡 燈光與音樂按鈕：更換為強對比實心亮色背底 */}
-                            <div className="glass-panel flex gap-6 px-10 py-6">
+                            {/* 💡 燈光與音樂按鈕：尺寸放大到 w-32 h-32，完美解決盲點點擊問題 */}
+                            <div className="glass-panel flex gap-8 px-12 py-8">
                                 <button 
                                     onClick={() => setLightOn(!lightOn)} 
-                                    className={`w-24 h-24 btn-mirror rounded-[20px] flex flex-col items-center justify-center gap-2 ${
+                                    className={`w-32 h-32 btn-mirror rounded-[24px] flex flex-col items-center justify-center gap-3 ${
                                         lightOn ? 'btn-mirror-active-ctrl' : 'btn-mirror-inactive-ctrl'
                                     }`}
                                 >
-                                    <i data-lucide="lightbulb" className="w-8 h-8"></i>
-                                    <span className="text-xs font-black uppercase">Light</span>
+                                    <i data-lucide="lightbulb"></i>
+                                    <span className="text-xs font-black uppercase tracking-widest">Light</span>
                                 </button>
                                 <button 
                                     onClick={handleMusic} 
-                                    className={`w-24 h-24 btn-mirror rounded-[20px] flex flex-col items-center justify-center gap-2 ${
+                                    className={`w-32 h-32 btn-mirror rounded-[24px] flex flex-col items-center justify-center gap-3 ${
                                         musicOn ? 'btn-mirror-active-ctrl' : 'btn-mirror-inactive-ctrl'
                                     }`}
                                 >
-                                    <i data-lucide={musicOn ? "pause" : "play"} className="w-8 h-8"></i>
-                                    <span className="text-xs font-black uppercase">Music</span>
+                                    <i data-lucide={musicOn ? "pause" : "play"}></i>
+                                    <span className="text-xs font-black uppercase tracking-widest">Music</span>
                                 </button>
                             </div>
 
-                            {/* 💡 語言切換按鈕區：更換為強對比實心亮藍背底 */}
-                            <div className="flex gap-4 glass-panel p-4">
+                            {/* 💡 語言切換按鈕區：尺寸加寬，觸摸安全度提高 */}
+                            <div className="flex gap-6 glass-panel p-6">
                                 {['tw', 'en'].map(c => (
                                     <button 
                                         key={c} 
                                         onClick={() => setLang(c)}
-                                        className={`px-8 py-3 font-black text-lg rounded-[12px] btn-mirror ${
+                                        className={`px-10 py-5 font-black text-xl rounded-[16px] btn-mirror ${
                                             lang === c ? 'btn-mirror-active-lang' : 'btn-mirror-inactive-lang'
                                         }`}
                                     >
