@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Mirror - COMPUTEX Taipei 2026 V43 (Anti-Glare)</title>
+    <title>Smart Mirror - COMPUTEX Taipei 2026 V44 (Anti-Glare & High Contrast)</title>
     
     <!-- 基礎架構載入：採用穩定線上 CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -90,14 +90,41 @@
         @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         .animate-marquee { display: flex; white-space: nowrap; animation: marquee 45s linear infinite; }
         
-        .btn-mirror { border: 2px solid rgba(255, 255, 255, 0.2); transition: 0.2s; cursor: pointer; }
-        .btn-active { background: #fff !important; color: #000 !important; border-color: #fff !important; box-shadow: 0 0 35px rgba(255,255,255,0.5); }
+        /* 💡 現場高可視度實心按鈕樣式 */
+        .btn-mirror-inactive-ctrl {
+            background-color: #121212 !important;
+            border: 3px solid #10b981 !important;
+            color: #10b981 !important;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+        }
+        .btn-mirror-active-ctrl {
+            background-color: #10b981 !important;
+            border: 3px solid #10b981 !important;
+            color: #000000 !important;
+            box-shadow: 0 0 40px rgba(16, 185, 129, 0.8);
+        }
+        
+        .btn-mirror-inactive-lang {
+            background-color: #121212 !important;
+            border: 3px solid #22d3ee !important;
+            color: #22d3ee !important;
+            box-shadow: 0 4px 15px rgba(34, 211, 238, 0.2);
+        }
+        .btn-mirror-active-lang {
+            background-color: #22d3ee !important;
+            border: 3px solid #22d3ee !important;
+            color: #000000 !important;
+            box-shadow: 0 0 40px rgba(34, 211, 238, 0.8);
+        }
+        
+        .btn-mirror { transition: all 0.15s ease-out; cursor: pointer; }
+        .btn-mirror:active { transform: scale(0.92); }
         
         * { -webkit-tap-highlight-color: transparent; }
     </style>
     
     <script>
-        // 建立全域代理函數，確保 HTML 中的 onclick 隨時可用，避免因 Babel Standalone 非同步編譯未完成而拋出 ReferenceError
+        // 建立全域代理函數，確保 HTML 中的 onclick 隨時可用
         window.bootSystem = function() {
             if (typeof window._bootSystemImpl === 'function') {
                 window._bootSystemImpl();
@@ -125,7 +152,7 @@
         let globalAudio = null;
         const FALLBACK_MUSIC = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
 
-        // 系統載入監控：確保 React 與 Lucide 庫完全加載後才顯示點擊按鈕
+        // 系統載入監控
         const checkReady = setInterval(() => {
             if (typeof React !== 'undefined' && typeof lucide !== 'undefined') {
                 document.getElementById('loading-hint').style.display = 'none';
@@ -248,7 +275,7 @@
                                 {dateStr}
                             </p>
                             
-                            {/* 右上角：COMPUTEX 現場發表行程 (強化邊框與面板對比度) */}
+                            {/* 右上角：COMPUTEX 現場發表行程 */}
                             <div className="glass-panel w-[280px] text-right">
                                 <div className="text-xs font-black tracking-widest border-b border-cyan-500 pb-2 mb-2 text-cyan-400 uppercase italic">Show Schedule</div>
                                 <div className="flex flex-col gap-2">
@@ -281,7 +308,7 @@
                         ></iframe>
                     </div>
 
-                    {/* 4. MARQUEE AREA (安全上移：中英 COMPUTEX 動態跑馬燈，字體放大加粗 + 背景黑條阻光) */}
+                    {/* 4. MARQUEE AREA (動態跑馬燈) */}
                     <div className="marquee-safe-box">
                         <div className="animate-marquee">
                             {t.marquee.map((m, i) => (
@@ -299,27 +326,41 @@
                         </div>
                     </div>
 
-                    {/* 5. BOTTOM CONTROLS & STATS (精簡控制按鈕 + 展會商務指標數據) */}
+                    {/* 5. BOTTOM CONTROLS & STATS (現場高飽和度實心按鈕) */}
+                    {}
                     <div className="flex flex-col gap-8">
                         <div className="flex justify-between items-end">
-                            {/* 燈光與音樂按鈕 */}
+                            {/* 💡 燈光與音樂按鈕：更換為強對比實心亮色背底 */}
                             <div className="glass-panel flex gap-6 px-10 py-6">
-                                <button onClick={() => setLightOn(!lightOn)} className={`w-24 h-24 btn-mirror rounded-[20px] flex flex-col items-center justify-center gap-2 ${lightOn ? 'btn-active shadow-xl' : 'text-white/40'}`}>
+                                <button 
+                                    onClick={() => setLightOn(!lightOn)} 
+                                    className={`w-24 h-24 btn-mirror rounded-[20px] flex flex-col items-center justify-center gap-2 ${
+                                        lightOn ? 'btn-mirror-active-ctrl' : 'btn-mirror-inactive-ctrl'
+                                    }`}
+                                >
                                     <i data-lucide="lightbulb" className="w-8 h-8"></i>
                                     <span className="text-xs font-black uppercase">Light</span>
                                 </button>
-                                <button onClick={handleMusic} className={`w-24 h-24 btn-mirror rounded-[20px] flex flex-col items-center justify-center gap-2 ${musicOn ? 'btn-active bg-cyan-600' : 'text-white/40'}`}>
+                                <button 
+                                    onClick={handleMusic} 
+                                    className={`w-24 h-24 btn-mirror rounded-[20px] flex flex-col items-center justify-center gap-2 ${
+                                        musicOn ? 'btn-mirror-active-ctrl' : 'btn-mirror-inactive-ctrl'
+                                    }`}
+                                >
                                     <i data-lucide={musicOn ? "pause" : "play"} className="w-8 h-8"></i>
                                     <span className="text-xs font-black uppercase">Music</span>
                                 </button>
                             </div>
 
-                            {/* 語言切換按鈕區 */}
+                            {/* 💡 語言切換按鈕區：更換為強對比實心亮藍背底 */}
                             <div className="flex gap-4 glass-panel p-4">
                                 {['tw', 'en'].map(c => (
                                     <button 
-                                        key={c} onClick={() => setLang(c)}
-                                        className={`px-8 py-3 border-2 font-black text-lg rounded-[12px] transition-all ${lang === c ? 'bg-white text-black border-white shadow-lg' : 'border-white/20 text-white/40 hover:text-white'}`}
+                                        key={c} 
+                                        onClick={() => setLang(c)}
+                                        className={`px-8 py-3 font-black text-lg rounded-[12px] btn-mirror ${
+                                            lang === c ? 'btn-mirror-active-lang' : 'btn-mirror-inactive-lang'
+                                        }`}
                                     >
                                         {c.toUpperCase()}
                                     </button>
@@ -327,15 +368,19 @@
                             </div>
                         </div>
 
-                        {/* 最底部：COMPUTEX 展場商務數據指標 (放大字體，改為超高對比色彩) */}
-                        <div className="flex justify-center gap-24">
+                        {/* 💡 底部數據指標：修正跑版重疊，加入垂直分割線與大間距 */}
+                        <div className="flex justify-center items-center gap-32 py-2">
                             <div className="text-center">
-                                <div className="text-4xl font-black text-emerald-300 mirror-text-glow">12,480</div>
-                                <div className="text-xs font-black text-white/90 tracking-widest mt-1 mirror-text-glow">{t.visitorsLabel}</div>
+                                <div className="text-5xl font-black text-emerald-300 mirror-text-glow">12,480</div>
+                                <div className="text-xs font-black text-white/90 tracking-widest mt-2 uppercase mirror-text-glow">{t.visitorsLabel}</div>
                             </div>
+                            
+                            {/* 實體白色半透明分割線：確保兩者絕不相撞 */}
+                            <div className="h-16 w-[3px] bg-white/20 rounded-full"></div>
+                            
                             <div className="text-center">
                                 <div className="text-5xl font-black text-indigo-300 mirror-text-glow">100%</div>
-                                <div className="text-xs font-black text-white/90 tracking-widest mt-1 mirror-text-glow">{t.uptimeLabel}</div>
+                                <div className="text-xs font-black text-white/90 tracking-widest mt-2 uppercase mirror-text-glow">{t.uptimeLabel}</div>
                             </div>
                         </div>
                     </div>
