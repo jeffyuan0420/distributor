@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Mirror - COMPUTEX Taipei 2026 V45 (Neon Glow Buttons)</title>
+    <title>Smart Mirror - COMPUTEX Taipei 2026 V46 (TW/EN/JP Tri-lingual)</title>
     
     <!-- 基礎架構載入：採用穩定線上 CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -68,7 +68,7 @@
         }
         .video-overlay { position: absolute; inset: 0; z-index: 10; }
 
-        /* 核心修復：抗展場高反射黑輪廓陰影 */
+        /* 抗展場高反射黑輪廓陰影 */
         .mirror-text-glow {
             text-shadow: 
                 0px 0px 8px rgba(0, 0, 0, 1), 
@@ -90,7 +90,7 @@
         @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         .animate-marquee { display: flex; white-space: nowrap; animation: marquee 45s linear infinite; }
         
-        /* 💡 現場超高可視度：實心霓虹發光按鈕樣式 (V45 修復) */
+        /* 💡 現場超高可視度：實心霓虹發光按鈕樣式 */
         .btn-mirror-inactive-ctrl {
             background-color: rgba(16, 185, 129, 0.15) !important; /* 實心15%綠底，消除全黑反光 */
             border: 4px solid #10b981 !important; /* 加粗至 4px */
@@ -120,7 +120,7 @@
         .btn-mirror { transition: all 0.15s ease-out; cursor: pointer; }
         .btn-mirror:active { transform: scale(0.92); }
         
-        /* 💡 強制攔截並修改 Lucide 轉換後的 SVG 圖標：線條直接增粗至 2.8px，寬高放大至 42px */
+        /* 強制攔截並修改 Lucide 轉換後的 SVG 圖標：線條直接增粗至 2.8px，寬高放大至 42px */
         .btn-mirror svg {
             width: 42px !important;
             height: 42px !important;
@@ -148,7 +148,7 @@
         <div class="start-ring" id="start-btn" style="display: none;">
             <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M5 3l14 9-14 9V3z"/></svg>
         </div>
-        <p id="boot-text" style="display: none; margin-top: 30px; letter-spacing: 0.8em; font-weight: bold; font-size: 18px; color: #fff;">COMPUTEX 2026</p>
+        <p id="boot-text" style="display: none; margin-top: 30px; letter-spacing: 0.8em; font-weight: bold; font-size: 16px; color: #fff;">COMPUTEX 2026</p>
     </div>
 
     <div id="root" class="h-full"></div>
@@ -194,7 +194,7 @@
             const [lightOn, setLightOn] = useState(false);
             const [musicOn, setMusicOn] = useState(false);
 
-            // --- COMPUTEX 2026 國際商務語言資料庫 ---
+            // --- COMPUTEX 2026 國際商務語言資料庫 (含全新日文支援) ---
             const DATA = {
                 tw: {
                     welcome: "歡迎蒞臨 COMPUTEX 2026 | PERSONA 智慧魔鏡展位",
@@ -229,6 +229,23 @@
                         {t:"14:00 pm", v:"AI Interactive Tech Show"},
                         {t:"16:00 pm", v:"Business & Tech Matchmaking"}
                     ]
+                },
+                jp: {
+                    welcome: "COMPUTEX 2026へようこそ | PERSONA スマートミラーブース",
+                    location: "南港展覧館 2号館 1階 | ブース Q0829",
+                    visitorsLabel: "累計来場者数 TOTAL VISITORS",
+                    uptimeLabel: "システム連続稼働時間 SYSTEM UPTIME",
+                    marquee: [
+                        "COMPUTEX 2026 PERSONAブース Q0829へようこそ！スマートリテールの未来を共に切り拓きましょう！",
+                        "PERSONA 4Kスマートミラー：10点マルチタッチ、Android 11搭載、プレミアムビジネス展示向けに最適化。",
+                        "毎日ライブデモ製品発表会を開催中。詳細スペックは現地スタッフまでお気軽にお尋ねください。",
+                        "グローバル代理店および販売店を募集中。ODM/OEMプロジェクトやカスタマイズ開発のご相談を歓迎いたします。"
+                    ],
+                    items: [
+                        {t:"11:00 am", v:"スマートミラー ライブ発表会"},
+                        {t:"14:00 pm", v:"AIインタラクティブ実演"},
+                        {t:"16:00 pm", v:"技術提携・商談会"}
+                    ]
                 }
             };
 
@@ -252,7 +269,7 @@
             };
 
             const hhmm = time.toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
-            const dateStr = time.toLocaleDateString(lang==='tw'?'zh-TW':'en-US', { month: 'short', day: 'numeric', weekday: 'short' });
+            const dateStr = time.toLocaleDateString(lang==='tw'?'zh-TW':(lang==='jp'?'ja-JP':'en-US'), { month: 'short', day: 'numeric', weekday: 'short' });
 
             return (
                 <div className="global-safe-container">
@@ -307,7 +324,6 @@
                     {/* 3. VIDEO AREA (核心 5 片 YouTube 帶音訊輪播) */}
                     <div className="video-container-max">
                         <div className="video-overlay"></div>
-                        {/* 💡 修正：origin 指向 GitHub Pages 真實根網域，解除 Error 150 / 153 防護 */}
                         <iframe 
                             className="w-full h-full border-none"
                             src="https://www.youtube-nocookie.com/embed/XnjQNAigtYE?autoplay=1&mute=0&loop=1&playlist=XnjQNAigtYE,mAbcJRE48VY,n2qsqUDseYI,liuk0tEsOEM,GdKKJTlKUkE&controls=0&modestbranding=1&rel=0&iv_load_policy=3&enablejsapi=1&origin=https://jeffyuan0420.github.io"
@@ -337,7 +353,7 @@
                     {/* 5. BOTTOM CONTROLS & STATS (現場高飽和度螢光實心按鈕) */}
                     <div className="flex flex-col gap-8">
                         <div className="flex justify-between items-end">
-                            {/* 💡 燈光與音樂按鈕：尺寸放大到 w-32 h-32，完美解決盲點點擊問題 */}
+                            {/* 💡 燈光與音樂按鈕：尺寸 w-32 h-32 保持不變，維持直覺操作 */}
                             <div className="glass-panel flex gap-8 px-12 py-8">
                                 <button 
                                     onClick={() => setLightOn(!lightOn)} 
@@ -359,13 +375,13 @@
                                 </button>
                             </div>
 
-                            {/* 💡 語言切換按鈕區：尺寸加寬，觸摸安全度提高 */}
-                            <div className="flex gap-6 glass-panel p-6">
-                                {['tw', 'en'].map(c => (
+                            {/* 💡 語言切換按鈕區：微調 Padding 確保 TW/EN/JP 三鍵並排時空間分配對稱，完全不跑版 */}
+                            <div className="flex gap-4 glass-panel p-6">
+                                {['tw', 'en', 'jp'].map(c => (
                                     <button 
                                         key={c} 
                                         onClick={() => setLang(c)}
-                                        className={`px-10 py-5 font-black text-xl rounded-[16px] btn-mirror ${
+                                        className={`px-8 py-4 font-black text-xl rounded-[16px] btn-mirror ${
                                             lang === c ? 'btn-mirror-active-lang' : 'btn-mirror-inactive-lang'
                                         }`}
                                     >
@@ -375,14 +391,14 @@
                             </div>
                         </div>
 
-                        {/* 💡 底部數據指標：修正跑版重疊，加入垂直分割線與大間距 */}
+                        {/* 💡 底部數據指標：維持高強度防重疊物理分割線 */}
                         <div className="flex justify-center items-center gap-32 py-2">
                             <div className="text-center">
                                 <div className="text-5xl font-black text-emerald-300 mirror-text-glow">12,480</div>
                                 <div className="text-xs font-black text-white/90 tracking-widest mt-2 uppercase mirror-text-glow">{t.visitorsLabel}</div>
                             </div>
                             
-                            {/* 實體白色半透明分割線：確保兩者絕不相撞 */}
+                            {/* 實體白色半透明分割線：確保數據在任何解析度下絕不重疊 */}
                             <div className="h-16 w-[3px] bg-white/20 rounded-full"></div>
                             
                             <div className="text-center">
