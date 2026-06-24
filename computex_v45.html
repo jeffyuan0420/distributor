@@ -3,13 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Mirror - COMPUTEX Taipei 2026 V46 (TW/EN/JP Tri-lingual)</title>
+    <title>Smart Mirror - COMPUTEX Taipei 2026 V47 (Lite Edition)</title>
     
-    <!-- 基礎架構載入：採用穩定線上 CDN -->
+    <!-- 基礎架構載入：僅載入超輕量 Tailwind CSS 與 Lucide 圖標，完全拋棄 React 18 與 Babel -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
@@ -20,7 +17,7 @@
         body { 
             color: #fff; font-family: "Microsoft JhengHei", "Arial Black", sans-serif; -webkit-user-select: none; 
         }
-        
+
         /* Android 11 啟動授權層 */
         #wake-up-overlay {
             position: fixed; inset: 0; 
@@ -46,10 +43,10 @@
             padding: 50px 40px 40px 40px; 
         }
         
-        /* 強化防眩玻璃面板：提高暗度，阻擋背景高光反射 */
+        /* 強化防眩玻璃面板 */
         .glass-panel { 
-            background: rgba(0, 0, 0, 0.88); /* 提升至 88% 不透明度以吸收折射光 */
-            border: 2px solid rgba(255, 255, 255, 0.25); /* 強化邊界線條 */
+            background: rgba(0, 0, 0, 0.88); 
+            border: 2px solid rgba(255, 255, 255, 0.25); 
             border-radius: 20px; padding: 14px; 
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
         }
@@ -79,7 +76,7 @@
         /* 跑馬燈安全區域 */
         .marquee-safe-box {
             width: 100%;
-            background: rgba(0, 0, 0, 0.85); /* 強化底色對比 */
+            background: rgba(0, 0, 0, 0.85); 
             padding: 15px 0;
             margin: 10px 0;
             border-top: 2px solid rgba(255, 255, 255, 0.15);
@@ -90,28 +87,28 @@
         @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         .animate-marquee { display: flex; white-space: nowrap; animation: marquee 45s linear infinite; }
         
-        /* 💡 現場超高可視度：實心霓虹發光按鈕樣式 */
+        /* 螢光實心按鈕樣式 */
         .btn-mirror-inactive-ctrl {
-            background-color: rgba(16, 185, 129, 0.15) !important; /* 實心15%綠底，消除全黑反光 */
-            border: 4px solid #10b981 !important; /* 加粗至 4px */
+            background-color: rgba(16, 185, 129, 0.15) !important;
+            border: 4px solid #10b981 !important;
             color: #10b981 !important;
             box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
         }
         .btn-mirror-active-ctrl {
-            background-color: #10b981 !important; /* 100% 實心螢光綠 */
+            background-color: #10b981 !important;
             border: 4px solid #10b981 !important;
-            color: #000000 !important; /* 純黑字，對比強烈 */
-            box-shadow: 0 0 50px rgba(16, 185, 129, 0.9); /* 超高霓虹發光暈 */
+            color: #000000 !important;
+            box-shadow: 0 0 50px rgba(16, 185, 129, 0.9);
         }
         
         .btn-mirror-inactive-lang {
-            background-color: rgba(34, 211, 238, 0.15) !important; /* 實心15%藍底 */
-            border: 4px solid #22d3ee !important; /* 加粗至 4px */
+            background-color: rgba(34, 211, 238, 0.15) !important;
+            border: 4px solid #22d3ee !important;
             color: #22d3ee !important;
             box-shadow: 0 4px 20px rgba(34, 211, 238, 0.3);
         }
         .btn-mirror-active-lang {
-            background-color: #22d3ee !important; /* 100% 實心螢光藍 */
+            background-color: #22d3ee !important;
             border: 4px solid #22d3ee !important;
             color: #000000 !important;
             box-shadow: 0 0 50px rgba(34, 211, 238, 0.9);
@@ -120,301 +117,301 @@
         .btn-mirror { transition: all 0.15s ease-out; cursor: pointer; }
         .btn-mirror:active { transform: scale(0.92); }
         
-        /* 強制攔截並修改 Lucide 轉換後的 SVG 圖標：線條直接增粗至 2.8px，寬高放大至 42px */
+        /* 向量圖標加粗 */
         .btn-mirror svg {
             width: 42px !important;
             height: 42px !important;
-            stroke-width: 2.8 !important; /* 原本是 1.5 或 2.0，加粗解決反射看不清的問題 */
+            stroke-width: 2.8 !important;
         }
         
         * { -webkit-tap-highlight-color: transparent; }
     </style>
-    
-    <script>
-        // 建立全域代理函數，確保 HTML 中的 onclick 隨時可用
-        window.bootSystem = function() {
-            if (typeof window._bootSystemImpl === 'function') {
-                window._bootSystemImpl();
-            } else {
-                console.warn("系統仍在初始化編譯，請稍候點擊。");
-            }
-        };
-    </script>
 </head>
 <body class="h-full">
-    <!-- 引導層：解鎖 Android 11 媒體自動播放限制 -->
+    <!-- 引導層：解鎖 Android 8 媒體自動播放限制 -->
     <div id="wake-up-overlay" onclick="bootSystem()">
-        <div id="loading-hint" style="color: #666; font-size: 14px; margin-bottom: 20px; font-weight: bold;">INITIALIZING HIGH-CONTRAST INTERFACE...</div>
-        <div class="start-ring" id="start-btn" style="display: none;">
+        <div id="loading-hint" style="color: #666; font-size: 14px; margin-bottom: 20px; font-weight: bold;">INITIALIZING HIGH-CONTRAST LITE INTERFACE...</div>
+        <div class="start-ring">
             <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M5 3l14 9-14 9V3z"/></svg>
         </div>
-        <p id="boot-text" style="display: none; margin-top: 30px; letter-spacing: 0.8em; font-weight: bold; font-size: 16px; color: #fff;">COMPUTEX 2026</p>
+        <p style="margin-top: 30px; letter-spacing: 0.8em; font-weight: bold; font-size: 18px; color: #fff;">COMPUTEX 2026</p>
     </div>
 
-    <div id="root" class="h-full"></div>
+    <!-- 主介面根節點 -->
+    <div id="root" class="h-full">
+        <div class="global-safe-container">
+            
+            <!-- 1. HEADER -->
+            <div class="flex justify-between items-start">
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-6">
+                        <div class="h-32 w-32 flex items-center justify-center bg-black/40 rounded-xl p-1 border border-white/10">
+                            <img src="./logo.png" class="h-full w-full object-contain" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3059/3059518.png'" />
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 mt-6 text-white font-bold mirror-text-glow">
+                        <i data-lucide="map-pin" class="w-6 h-6 text-cyan-400"></i>
+                        <span id="location-text" class="text-xl font-bold uppercase tracking-[0.2em]"></span>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col items-end pr-16">
+                    <h1 id="clock-time" class="text-8xl font-black text-white tracking-tighter leading-none mirror-text-glow">12:00</h1>
+                    <p id="clock-date" class="text-3xl font-bold text-yellow-300 mt-3 tracking-[0.1em] uppercase mb-6 mirror-text-glow"></p>
+                    
+                    <div class="glass-panel w-[280px] text-right">
+                        <div class="text-xs font-black tracking-widest border-b border-cyan-500 pb-2 mb-2 text-cyan-400 uppercase italic">Show Schedule</div>
+                        <div id="schedule-list" class="flex flex-col gap-2"></div>
+                    </div>
+                </div>
+            </div>
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+            <!-- 2. WELCOME BANNER -->
+            <div class="mt-4 mb-2 border-l-4 border-cyan-400 pl-8 py-4 bg-black/80 rounded-r-3xl border border-white/10 shadow-2xl">
+                <div id="welcome-text" class="text-3xl font-black text-white tracking-[0.3em] uppercase mirror-text-glow"></div>
+            </div>
+
+            <!-- 3. VIDEO AREA (與 V46 完全一致的 YouTube 跨網域防阻擋網址) -->
+            <div class="video-container-max">
+                <div class="video-overlay"></div>
+                <iframe 
+                    class="w-full h-full border-none"
+                    src="https://www.youtube-nocookie.com/embed/XnjQNAigtYE?autoplay=1&mute=0&loop=1&playlist=XnjQNAigtYE,mAbcJRE48VY,n2qsqUDseYI,liuk0tEsOEM,GdKKJTlKUkE&controls=0&modestbranding=1&rel=0&iv_load_policy=3&enablejsapi=1&origin=https://jeffyuan0420.github.io"
+                    allow="autoplay; encrypted-media" 
+                    allowfullscreen
+                ></iframe>
+            </div>
+
+            <!-- 4. MARQUEE AREA -->
+            <div class="marquee-safe-box">
+                <div id="marquee-content" class="animate-marquee"></div>
+            </div>
+
+            <!-- 5. BOTTOM CONTROLS & STATS -->
+            <div class="flex flex-col gap-8">
+                <div class="flex justify-between items-end">
+                    <div class="glass-panel flex gap-8 px-12 py-8">
+                        <button id="btn-light" onclick="toggleLight()" class="w-32 h-32 btn-mirror rounded-[24px] flex flex-col items-center justify-center gap-3 btn-mirror-inactive-ctrl">
+                            <i data-lucide="lightbulb"></i>
+                            <span class="text-xs font-black uppercase tracking-widest">Light</span>
+                        </button>
+                        <button id="btn-music" onclick="toggleMusic()" class="w-32 h-32 btn-mirror rounded-[24px] flex flex-col items-center justify-center gap-3 btn-mirror-inactive-ctrl">
+                            <i data-lucide="play"></i>
+                            <span class="text-xs font-black uppercase tracking-widest">Music</span>
+                        </button>
+                    </div>
+
+                    <div class="flex gap-6 glass-panel p-6">
+                        <button id="btn-tw" onclick="setLanguage('tw')" class="px-8 py-4 font-black text-xl rounded-[16px] btn-mirror">TW</button>
+                        <button id="btn-en" onclick="setLanguage('en')" class="px-8 py-4 font-black text-xl rounded-[16px] btn-mirror">EN</button>
+                        <button id="btn-jp" onclick="setLanguage('jp')" class="px-8 py-4 font-black text-xl rounded-[16px] btn-mirror">JP</button>
+                    </div>
+                </div>
+
+                <div class="flex justify-center items-center gap-32 py-2">
+                    <div class="text-center">
+                        <div class="text-5xl font-black text-emerald-300 mirror-text-glow">12,480</div>
+                        <div id="label-visitors" class="text-xs font-black text-white/90 tracking-widest mt-2 uppercase mirror-text-glow"></div>
+                    </div>
+                    
+                    <div class="h-16 w-[3px] bg-white/20 rounded-full"></div>
+                    
+                    <div class="text-center">
+                        <div class="text-5xl font-black text-indigo-300 mirror-text-glow">100%</div>
+                        <div id="label-uptime" class="text-xs font-black text-white/90 tracking-widest mt-2 uppercase mirror-text-glow"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 💡 極簡驅動邏輯：完全使用 Vanilla JS，免除 React 運行時開銷 -->
+    <script>
+        const state = {
+            lang: 'tw',
+            lightOn: false,
+            musicOn: false,
+            time: new Date()
+        };
+
+        const DATA = {
+            tw: {
+                welcome: "歡迎蒞臨 COMPUTEX 2026 | PERSONA 智慧魔鏡展位",
+                location: "南港展覽館 2 館 1 樓 | 展位 Q0829",
+                visitorsLabel: "累積展期人流 TOTAL VISITORS",
+                uptimeLabel: "系統持續運作 SYSTEM UPTIME",
+                marquee: [
+                    "歡迎蒞臨 COMPUTEX 2026 PERSONA 展位 Q0829，共同開啟未來零售新篇章！",
+                    "PERSONA 4K 智慧魔鏡：支援 10 點電容觸控、Android 11 系統，專為頂級商務展示量身打造。",
+                    "現場每日定時舉辦 Live Demo 產品發表，歡迎洽詢現場工作人員獲取詳細規格。",
+                    "全球代理商與經銷商招募中，誠邀各界合作夥伴洽談 ODM / OEM 專案與客製化合作。"
+                ],
+                items: [
+                    {t:"11:00 am", v:"智慧零售魔鏡 Live 發表會"},
+                    {t:"14:00 pm", v:"AI 互動智慧系統展示"},
+                    {t:"16:00 pm", v:"現場技術合作洽談會"}
+                ]
+            },
+            en: {
+                welcome: "Welcome to COMPUTEX 2026 | PERSONA Smart Mirror",
+                location: "TaiNEX Hall 2, 1F | Booth Q0829",
+                visitorsLabel: "TOTAL VISITORS",
+                uptimeLabel: "SYSTEM UPTIME",
+                marquee: [
+                    "Welcome to PERSONA Booth Q0829 at COMPUTEX 2026! Let's shape the future of retail together!",
+                    "PERSONA 4K Smart Mirror: Featuring 10-point capacitive touch, powered by Android 11, tailored for premium business.",
+                    "Live Product Demos held daily. Scan or contact our onsite team for full specifications and partnerships.",
+                    "Global distributors & partners wanted. Welcome to discuss ODM/OEM projects and custom integrations."
+                ],
+                items: [
+                    {t:"11:00 am", v:"Smart Retail Mirror Live Demo"},
+                    {t:"14:00 pm", v:"AI Interactive Tech Show"},
+                    {t:"16:00 pm", v:"Business & Tech Matchmaking"}
+                ]
+            },
+            jp: {
+                welcome: "COMPUTEX 2026へようこそ | PERSONA スマートミラーブース",
+                location: "南港展覧館 2号館 1階 | ブース Q0829",
+                visitorsLabel: "累計来場者数 TOTAL VISITORS",
+                uptimeLabel: "システム連続稼働時間 SYSTEM UPTIME",
+                marquee: [
+                    "COMPUTEX 2026 PERSONAブース Q0829へようこそ！スマートリテールの未来を共に切り拓きましょう！",
+                    "PERSONA 4Kスマートミラー：10点マルチタッチ、Android 11搭載、プレミアムビジネス展示向けに最適化。",
+                    "毎日ライブデモ製品発表会を開催中。詳細スペックは現地スタッフまでお気軽にお尋ねください。",
+                    "グローバル代理店および販売店を募集中。ODM/OEMプロジェクトやカスタマイズ開発のご相談を歓迎いたします。"
+                ],
+                items: [
+                    {t:"11:00 am", v:"スマートミラー ライブ発表會"},
+                    {t:"14:00 pm", v:"AIインタラクティブ実演"},
+                    {t:"16:00 pm", v:"技術提携・商談會"}
+                ]
+            }
+        };
 
         let globalAudio = null;
         const FALLBACK_MUSIC = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
 
-        // 系統載入監控
-        const checkReady = setInterval(() => {
-            if (typeof React !== 'undefined' && typeof lucide !== 'undefined') {
-                document.getElementById('loading-hint').style.display = 'none';
-                document.getElementById('start-btn').style.display = 'flex';
-                document.getElementById('boot-text').style.display = 'block';
-                clearInterval(checkReady);
-            }
-        }, 500);
-
-        // 將實際的啟動邏輯註冊到代理對象上
-        window._bootSystemImpl = async function() {
+        // 啟動系統，解鎖音源播放限制
+        window.bootSystem = async function() {
             try {
-                // 嘗試加載並解鎖本地背景音樂
                 globalAudio = new Audio('./bg_music.mp3');
                 globalAudio.loop = true;
                 globalAudio.onerror = () => { globalAudio.src = FALLBACK_MUSIC; };
                 await globalAudio.play();
                 globalAudio.pause();
-            } catch (e) { console.warn("Audio bypass."); }
+            } catch (e) { console.warn("Audio Context init bypassed."); }
 
-            // 淡出啟動遮罩，進入主介面
             document.getElementById('wake-up-overlay').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('wake-up-overlay').style.display = 'none';
-                renderApp();
+                initApp();
             }, 800);
         };
 
-        function App() {
-            const [lang, setLang] = useState('tw');
-            const [time, setTime] = useState(new Date());
-            const [lightOn, setLightOn] = useState(false);
-            const [musicOn, setMusicOn] = useState(false);
+        function initApp() {
+            updateClock();
+            updateUI();
+            
+            // 啟動時間計時器
+            setInterval(updateClock, 1000);
+        }
 
-            // --- COMPUTEX 2026 國際商務語言資料庫 (含全新日文支援) ---
-            const DATA = {
-                tw: {
-                    welcome: "歡迎蒞臨 COMPUTEX 2026 | PERSONA 智慧魔鏡展位",
-                    location: "南港展覽館 2 館 1 樓 | 展位 Q0829",
-                    visitorsLabel: "累積展期人流 TOTAL VISITORS",
-                    uptimeLabel: "系統持續運作 SYSTEM UPTIME",
-                    marquee: [
-                        "歡迎蒞臨 COMPUTEX 2026 PERSONA 展位 Q0829，共同開啟未來零售新篇章！",
-                        "PERSONA 4K 智慧魔鏡：支援 10 點電容觸控、Android 11 系統，專為頂級商務展示量身打造。",
-                        "現場每日定時舉辦 Live Demo 產品發表，歡迎洽詢現場工作人員獲取詳細規格。",
-                        "全球代理商與經銷商招募中，誠邀各界合作夥伴洽談 ODM / OEM 專案與客製化合作。"
-                    ],
-                    items: [
-                        {t:"11:00 am", v:"智慧零售魔鏡 Live 發表會"},
-                        {t:"14:00 pm", v:"AI 互動智慧系統展示"},
-                        {t:"16:00 pm", v:"現場技術合作洽談會"}
-                    ]
-                },
-                en: {
-                    welcome: "Welcome to COMPUTEX 2026 | PERSONA Smart Mirror",
-                    location: "TaiNEX Hall 2, 1F | Booth Q0829",
-                    visitorsLabel: "TOTAL VISITORS",
-                    uptimeLabel: "SYSTEM UPTIME",
-                    marquee: [
-                        "Welcome to PERSONA Booth Q0829 at COMPUTEX 2026! Let's shape the future of retail together!",
-                        "PERSONA 4K Smart Mirror: Featuring 10-point capacitive touch, powered by Android 11, tailored for premium business.",
-                        "Live Product Demos held daily. Scan or contact our onsite team for full specifications and partnerships.",
-                        "Global distributors & partners wanted. Welcome to discuss ODM/OEM projects and custom integrations."
-                    ],
-                    items: [
-                        {t:"11:00 am", v:"Smart Retail Mirror Live Demo"},
-                        {t:"14:00 pm", v:"AI Interactive Tech Show"},
-                        {t:"16:00 pm", v:"Business & Tech Matchmaking"}
-                    ]
-                },
-                jp: {
-                    welcome: "COMPUTEX 2026へようこそ | PERSONA スマートミラーブース",
-                    location: "南港展覧館 2号館 1階 | ブース Q0829",
-                    visitorsLabel: "累計来場者数 TOTAL VISITORS",
-                    uptimeLabel: "システム連続稼働時間 SYSTEM UPTIME",
-                    marquee: [
-                        "COMPUTEX 2026 PERSONAブース Q0829へようこそ！スマートリテールの未来を共に切り拓きましょう！",
-                        "PERSONA 4Kスマートミラー：10点マルチタッチ、Android 11搭載、プレミアムビジネス展示向けに最適化。",
-                        "毎日ライブデモ製品発表会を開催中。詳細スペックは現地スタッフまでお気軽にお尋ねください。",
-                        "グローバル代理店および販売店を募集中。ODM/OEMプロジェクトやカスタマイズ開発のご相談を歓迎いたします。"
-                    ],
-                    items: [
-                        {t:"11:00 am", v:"スマートミラー ライブ発表会"},
-                        {t:"14:00 pm", v:"AIインタラクティブ実演"},
-                        {t:"16:00 pm", v:"技術提携・商談会"}
-                    ]
-                }
-            };
+        function updateClock() {
+            state.time = new Date();
+            const hhmm = state.time.toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
+            document.getElementById('clock-time').innerText = hhmm;
 
-            const t = DATA[lang];
+            const dateStr = state.time.toLocaleDateString(state.lang === 'tw' ? 'zh-TW' : (state.lang === 'jp' ? 'ja-JP' : 'en-US'), {
+                month: 'short', day: 'numeric', weekday: 'short'
+            });
+            document.getElementById('clock-date').innerText = dateStr;
+        }
 
-            useEffect(() => {
-                const timer = setInterval(() => setTime(new Date()), 1000);
-                if (window.lucide) lucide.createIcons();
-                return () => clearInterval(timer);
-            }, []);
+        function updateUI() {
+            const data = DATA[state.lang];
 
-            useEffect(() => {
-                if (window.lucide) lucide.createIcons();
-            }, [lang, musicOn, lightOn]);
+            // 1. 更新歡迎標語與地理位置
+            document.getElementById('welcome-text').innerText = data.welcome;
+            document.getElementById('location-text').innerText = data.location;
 
-            const handleMusic = () => {
-                if (!globalAudio) globalAudio = new Audio(FALLBACK_MUSIC);
-                const next = !musicOn; setMusicOn(next);
-                if (next) globalAudio.play().catch(() => setMusicOn(false));
-                else globalAudio.pause();
-            };
-
-            const hhmm = time.toLocaleTimeString('zh-TW', { hour12: false, hour: '2-digit', minute: '2-digit' });
-            const dateStr = time.toLocaleDateString(lang==='tw'?'zh-TW':(lang==='jp'?'ja-JP':'en-US'), { month: 'short', day: 'numeric', weekday: 'short' });
-
-            return (
-                <div className="global-safe-container">
-                    
-                    {/* 1. HEADER (放大 Logo + 右上角防切邊時鐘與 COMPUTEX 行程) */}
-                    <div className="flex justify-between items-start">
-                        <div className="flex flex-col">
-                            <div className="flex items-center gap-6">
-                                {/* 放大後的 Logo */}
-                                <div className="h-32 w-32 flex items-center justify-center bg-black/40 rounded-xl p-1 border border-white/10">
-                                    <img src="./logo.png" className="h-full w-full object-contain" onError={(i) => i.target.src = 'https://cdn-icons-png.flaticon.com/512/3059/3059518.png'} />
-                                </div>
-                            </div>
-                            {/* 強化對比度的展位地址 */}
-                            <div className="flex items-center gap-3 mt-6 text-white font-bold mirror-text-glow">
-                                <i data-lucide="map-pin" className="w-6 h-6 text-cyan-400"></i>
-                                <span className="text-xl font-bold uppercase tracking-[0.2em]">{t.location}</span>
-                            </div>
-                        </div>
-                        
-                        {/* 時鐘區域：內縮 pr-16 確保物理黑框不遮擋，並全面強化粗體與黑陰影 */}
-                        <div className="flex flex-col items-end pr-16">
-                            <h1 className="text-8xl font-black text-white tracking-tighter leading-none mirror-text-glow">
-                                {hhmm}
-                            </h1>
-                            <p className="text-3xl font-bold text-yellow-300 mt-3 tracking-[0.1em] uppercase mb-6 mirror-text-glow">
-                                {dateStr}
-                            </p>
-                            
-                            {/* 右上角：COMPUTEX 現場發表行程 */}
-                            <div className="glass-panel w-[280px] text-right">
-                                <div className="text-xs font-black tracking-widest border-b border-cyan-500 pb-2 mb-2 text-cyan-400 uppercase italic">Show Schedule</div>
-                                <div className="flex flex-col gap-2">
-                                    {t.items.map((it, i) => (
-                                        <div key={i} className="flex flex-col border-r-4 border-cyan-400 pr-4">
-                                            <span className="text-[14px] font-black text-white mirror-text-glow">{it.v}</span>
-                                            <span className="text-[11px] font-bold text-yellow-300 mt-0.5">{it.t}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* 2. WELCOME BANNER (深色抗眩光歡迎橫條) */}
-                    <div className="mt-4 mb-2 border-l-4 border-cyan-400 pl-8 py-4 bg-black/80 rounded-r-3xl border border-white/10 shadow-2xl">
-                        <div className="text-3xl font-black text-white tracking-[0.3em] uppercase mirror-text-glow">
-                            {t.welcome}
-                        </div>
-                    </div>
-
-                    {/* 3. VIDEO AREA (核心 5 片 YouTube 帶音訊輪播) */}
-                    <div className="video-container-max">
-                        <div className="video-overlay"></div>
-                        <iframe 
-                            className="w-full h-full border-none"
-                            src="https://www.youtube-nocookie.com/embed/XnjQNAigtYE?autoplay=1&mute=0&loop=1&playlist=XnjQNAigtYE,mAbcJRE48VY,n2qsqUDseYI,liuk0tEsOEM,GdKKJTlKUkE&controls=0&modestbranding=1&rel=0&iv_load_policy=3&enablejsapi=1&origin=https://jeffyuan0420.github.io"
-                            allow="autoplay; encrypted-media" 
-                            allowFullScreen
-                        ></iframe>
-                    </div>
-
-                    {/* 4. MARQUEE AREA (動態跑馬燈) */}
-                    <div className="marquee-safe-box">
-                        <div className="animate-marquee">
-                            {t.marquee.map((m, i) => (
-                                <div key={i} className="flex items-center">
-                                    <span className="text-2xl font-black text-white tracking-[0.1em] px-12 italic mirror-text-glow">{m}</span>
-                                    <i data-lucide="sparkles" className="w-6 h-6 text-yellow-400"></i>
-                                </div>
-                            ))}
-                            {t.marquee.map((m, i) => (
-                                <div key={`rep-${i}`} className="flex items-center">
-                                    <span className="text-2xl font-black text-white tracking-[0.1em] px-12 italic mirror-text-glow">{m}</span>
-                                    <i data-lucide="sparkles" className="w-6 h-6 text-yellow-400"></i>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* 5. BOTTOM CONTROLS & STATS (現場高飽和度螢光實心按鈕) */}
-                    <div className="flex flex-col gap-8">
-                        <div className="flex justify-between items-end">
-                            {/* 💡 燈光與音樂按鈕：尺寸 w-32 h-32 保持不變，維持直覺操作 */}
-                            <div className="glass-panel flex gap-8 px-12 py-8">
-                                <button 
-                                    onClick={() => setLightOn(!lightOn)} 
-                                    className={`w-32 h-32 btn-mirror rounded-[24px] flex flex-col items-center justify-center gap-3 ${
-                                        lightOn ? 'btn-mirror-active-ctrl' : 'btn-mirror-inactive-ctrl'
-                                    }`}
-                                >
-                                    <i data-lucide="lightbulb"></i>
-                                    <span className="text-xs font-black uppercase tracking-widest">Light</span>
-                                </button>
-                                <button 
-                                    onClick={handleMusic} 
-                                    className={`w-32 h-32 btn-mirror rounded-[24px] flex flex-col items-center justify-center gap-3 ${
-                                        musicOn ? 'btn-mirror-active-ctrl' : 'btn-mirror-inactive-ctrl'
-                                    }`}
-                                >
-                                    <i data-lucide={musicOn ? "pause" : "play"}></i>
-                                    <span className="text-xs font-black uppercase tracking-widest">Music</span>
-                                </button>
-                            </div>
-
-                            {/* 💡 語言切換按鈕區：微調 Padding 確保 TW/EN/JP 三鍵並排時空間分配對稱，完全不跑版 */}
-                            <div className="flex gap-4 glass-panel p-6">
-                                {['tw', 'en', 'jp'].map(c => (
-                                    <button 
-                                        key={c} 
-                                        onClick={() => setLang(c)}
-                                        className={`px-8 py-4 font-black text-xl rounded-[16px] btn-mirror ${
-                                            lang === c ? 'btn-mirror-active-lang' : 'btn-mirror-inactive-lang'
-                                        }`}
-                                    >
-                                        {c.toUpperCase()}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* 💡 底部數據指標：維持高強度防重疊物理分割線 */}
-                        <div className="flex justify-center items-center gap-32 py-2">
-                            <div className="text-center">
-                                <div className="text-5xl font-black text-emerald-300 mirror-text-glow">12,480</div>
-                                <div className="text-xs font-black text-white/90 tracking-widest mt-2 uppercase mirror-text-glow">{t.visitorsLabel}</div>
-                            </div>
-                            
-                            {/* 實體白色半透明分割線：確保數據在任何解析度下絕不重疊 */}
-                            <div className="h-16 w-[3px] bg-white/20 rounded-full"></div>
-                            
-                            <div className="text-center">
-                                <div className="text-5xl font-black text-indigo-300 mirror-text-glow">100%</div>
-                                <div className="text-xs font-black text-white/90 tracking-widest mt-2 uppercase mirror-text-glow">{t.uptimeLabel}</div>
-                            </div>
-                        </div>
-                    </div>
+            // 2. 更新行程表
+            const scheduleHTML = data.items.map(it => `
+                <div class="flex flex-col border-r-4 border-cyan-400 pr-4">
+                    <span class="text-[14px] font-black text-white mirror-text-glow">${it.v}</span>
+                    <span class="text-[11px] font-bold text-yellow-300 mt-0.5">${it.t}</span>
                 </div>
-            );
+            `).join('');
+            document.getElementById('schedule-list').innerHTML = scheduleHTML;
+
+            // 3. 更新跑馬燈 (雙重拼接以達到無縫滾動效果)
+            const marqueeText = data.marquee.map(m => `
+                <div class="flex items-center">
+                    <span class="text-2xl font-black text-white tracking-[0.1em] px-12 italic mirror-text-glow">${m}</span>
+                    <i data-lucide="sparkles" class="w-6 h-6 text-yellow-400"></i>
+                </div>
+            `).join('');
+            document.getElementById('marquee-content').innerHTML = marqueeText + marqueeText;
+
+            // 4. 更新底欄數據標籤
+            document.getElementById('label-visitors').innerText = data.visitorsLabel;
+            document.getElementById('label-uptime').innerText = data.uptimeLabel;
+
+            // 5. 更新 Light 按鈕
+            const btnLight = document.getElementById('btn-light');
+            btnLight.className = `w-32 h-32 btn-mirror rounded-[24px] flex flex-col items-center justify-center gap-3 ${
+                state.lightOn ? 'btn-mirror-active-ctrl' : 'btn-mirror-inactive-ctrl'
+            }`;
+
+            // 6. 更新 Music 按鈕
+            const btnMusic = document.getElementById('btn-music');
+            btnMusic.className = `w-32 h-32 btn-mirror rounded-[24px] flex flex-col items-center justify-center gap-3 ${
+                state.musicOn ? 'btn-mirror-active-ctrl' : 'btn-mirror-inactive-ctrl'
+            }`;
+            btnMusic.innerHTML = `
+                <i data-lucide="${state.musicOn ? 'pause' : 'play'}"></i>
+                <span class="text-xs font-black uppercase tracking-widest">Music</span>
+            `;
+
+            // 7. 更新語言按鈕選取狀態
+            ['tw', 'en', 'jp'].forEach(langCode => {
+                const btn = document.getElementById(`btn-${langCode}`);
+                btn.className = `px-8 py-4 font-black text-xl rounded-[16px] btn-mirror ${
+                    state.lang === langCode ? 'btn-mirror-active-lang' : 'btn-mirror-inactive-lang'
+                }`;
+            });
+
+            // 8. 重新載入向量圖示
+            if (window.lucide) {
+                lucide.createIcons();
+            }
         }
 
-        function renderApp() {
-            const root = ReactDOM.createRoot(document.getElementById('root'));
-            root.render(<App />);
-        }
+        // --- 控制項事件定義 ---
+        window.toggleLight = function() {
+            state.lightOn = !state.lightOn;
+            updateUI();
+        };
+
+        window.toggleMusic = function() {
+            if (!globalAudio) return;
+            state.musicOn = !state.musicOn;
+            if (state.musicOn) {
+                globalAudio.play().catch(e => {
+                    console.warn("Autoplay blocked, user interaction required.");
+                    state.musicOn = false;
+                    updateUI();
+                });
+            } else {
+                globalAudio.pause();
+            }
+            updateUI();
+        };
+
+        window.setLanguage = function(langCode) {
+            state.lang = langCode;
+            updateUI();
+        };
     </script>
 </body>
 </html>
